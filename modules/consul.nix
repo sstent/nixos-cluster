@@ -20,18 +20,17 @@
   # myPkg = oldpkgs.consul;
 in {
   # virtualisation.docker.enable = true;
-sops.secrets.consul_encrypt_json = {
+  sops.secrets.consul_encrypt_json = {
     sopsFile = "${secretstore}/consul_encrypt.json";
     device_json.format = "binary";
- };
-
+  };
 
   services.consul = {
     # package = myPkg;
     enable = true;
     webUi = true;
     interface.bind = "end0";
-    extraConfigFiles = [ sops.secrets.consul_encrypt_json.path ]
+    extraConfigFiles = [sops.secrets.consul_encrypt_json.path];
     extraConfig = {
       bootstrap = false;
       server = true;
