@@ -31,7 +31,7 @@ in {
       bootstrap = false;
       server = true;
       bootstrap_expect = 3;
-      encrypt = config.sops.secrets.consul_encrypt.path;
+      encrypt = config.sops.secrets.consul_encrypt;
       performance = {
         raft_multiplier = 5;
       };
