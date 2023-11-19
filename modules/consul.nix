@@ -25,6 +25,8 @@ in {
     # package = myPkg;
     enable = true;
     webUi = true;
+    interface.bind = "end0";
+
     extraConfig = {
       bootstrap = false;
       bootstrap_expect = 7;
