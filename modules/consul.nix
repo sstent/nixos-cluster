@@ -30,7 +30,7 @@ in {
     enable = true;
     webUi = true;
     interface.bind = "end0";
-    extraConfigFiles = [sops.secrets.consul_encrypt_json.path];
+    extraConfigFiles = [config.sops.secrets.consul_encrypt_json.path];
     extraConfig = {
       bootstrap = false;
       server = true;
