@@ -6,11 +6,21 @@
   ...
 }: let
   secretstore = config._secretstore;
+
+  pkgs = import (builtins.fetchGit {
+    # Descriptive name to make the store path easier to identify
+    name = "my-old-revision";
+    url = "https://github.com/NixOS/nixpkgs/";
+    ref = "refs/heads/nixpkgs-unstable";
+    rev = "3b05df1d13c1b315cecc610a2f3180f6669442f0";
+  }) {};
+
+  myPkg = pkgs.consul;
 in {
   # virtualisation.docker.enable = true;
   sops.secrets.consul_encrypt = {};
   services.consul = {
-    package = pkgs.consul_1_9;
+    package = myPkg;
     enable = true;
     webUi = true;
     extraConfig = {
