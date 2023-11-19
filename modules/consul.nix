@@ -4,9 +4,11 @@
   config,
   inputs,
   ...
-}: {
+}: let
+  secretstore = config._secretstore;
+in {
   # virtualisation.docker.enable = true;
-
+  sops.secrets.consul_encrypt = {};
   services.consul = {
     package = pkgs.consul_1_9;
     enable = true;
@@ -14,7 +16,7 @@
     extra_config = {
       bootstrap = false;
       bootstrap_expect = 7;
-      encrypt = config.sops.secrets.consul_encrypt;
+      encrypt = config.sops.secrets.consul_encrypt.path;
       performance = {
         raft_multiplier = 5;
       };
