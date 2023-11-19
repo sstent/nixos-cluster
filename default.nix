@@ -58,6 +58,7 @@
     };
   environment.systemPackages = [
     pkgs.git
+    pkgs.ncdu
   ];
 
 
