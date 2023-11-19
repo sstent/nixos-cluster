@@ -7,16 +7,16 @@
 }: let
   secretstore = config._secretstore;
 
-  # oldpkgs = import (builtins.fetchGit {
-  #   # Descriptive name to make the store path easier to identify
-  #   name = "my-old-revision";
-  #   url = "https://github.com/NixOS/nixpkgs/";
-  #   ref = "refs/heads/nixpkgs-unstable";
-  #   rev = "3b05df1d13c1b315cecc610a2f3180f6669442f0";
-  # }) {};
-  oldpkgs = import (builtins.fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/archive/3b05df1d13c1b315cecc610a2f3180f6669442f0.tar.gz";
+  oldpkgs = import (builtins.fetchGit {
+    # Descriptive name to make the store path easier to identify
+    name = "git_consul_1_9";
+    url = "https://github.com/NixOS/nixpkgs/";
+    ref = "refs/heads/nixpkgs-unstable";
+    rev = "3b05df1d13c1b315cecc610a2f3180f6669442f0";
   }) {};
+  # oldpkgs = import (builtins.fetchTarball {
+  #   url = "https://github.com/NixOS/nixpkgs/archive/3b05df1d13c1b315cecc610a2f3180f6669442f0.tar.gz";
+  # }) {};
 
   myPkg = oldpkgs.consul;
 in {
