@@ -21,7 +21,7 @@
         #     '';
         #     };
 
-          #boot.loader.grub.enable = false;
+          boot.loader.grub.enable = false;
           boot.loader.kboot-conf.enable = true;
           # Use kernel >6.6 
           boot.kernelPackages = pkgs.linuxPackages_latest;
