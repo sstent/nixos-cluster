@@ -14,3 +14,11 @@ creation_rules:
       - *StuPC-WSL_NIXOS
       - *go3_WSL_NIXOS
       - *ODROID8
+  - path_regex: secrets/.*$
+    key_groups:
+    - age:
+      - *adminkey
+      - *STU_ID
+      - *StuPC-WSL_NIXOS
+      - *go3_WSL_NIXOS
+      - *ODROID8
