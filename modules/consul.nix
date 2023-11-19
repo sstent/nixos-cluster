@@ -7,7 +7,7 @@
 }: let
   secretstore = config._secretstore;
 
-  pkgs = import (builtins.fetchGit {
+  oldpkgs = import (builtins.fetchGit {
     # Descriptive name to make the store path easier to identify
     name = "my-old-revision";
     url = "https://github.com/NixOS/nixpkgs/";
@@ -15,7 +15,7 @@
     rev = "3b05df1d13c1b315cecc610a2f3180f6669442f0";
   }) {};
 
-  myPkg = pkgs.consul;
+  myPkg = oldpkgs.consul;
 in {
   # virtualisation.docker.enable = true;
   sops.secrets.consul_encrypt = {};
