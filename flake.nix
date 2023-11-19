@@ -5,7 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
-  outputs = { self, nixpkgs, nix-darwin, agenix, home-manager, ... }@inputs: 
+  outputs = { self, nixpkgs, ... }@inputs: 
   let 
     globalModules = [ 
       { 

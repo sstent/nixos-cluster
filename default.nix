@@ -3,7 +3,7 @@
           imports = [
             ./kboot-conf
             # "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64-installer.nix"
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
 
           ];
 
