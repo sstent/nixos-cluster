@@ -23,7 +23,7 @@
     nixosConfigurations = {
       odroid8 = nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
-        extraSpecialArgs = {inherit inputs;};
+        specialArgs = {inherit inputs;};
         modules =
           globalModules
           ++ [./hosts/odroid8];
