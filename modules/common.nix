@@ -20,7 +20,7 @@
   #   description = "Path to the Secrets storage";
   # };
 
-  config = {
+  # config = {
     system.stateVersion = "23.11"; # Did you read the comment?
 
     # sops = {
@@ -45,5 +45,6 @@ nix.nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
       settings.PermitRootLogin = "yes";
     };
     users.extraUsers.root.initialPassword = lib.mkForce "odroid";
-  };
-}
+  }
+  # ;
+# }
