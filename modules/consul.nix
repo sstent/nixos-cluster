@@ -13,7 +13,7 @@ in {
     package = pkgs.consul_1_9;
     enable = true;
     webUi = true;
-    extra_config = {
+    extraConfig = {
       bootstrap = false;
       bootstrap_expect = 7;
       encrypt = config.sops.secrets.consul_encrypt.path;
