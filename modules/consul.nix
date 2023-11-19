@@ -29,7 +29,8 @@ in {
 
     extraConfig = {
       bootstrap = false;
-      bootstrap_expect = 7;
+      server = true;
+      bootstrap_expect = 3;
       encrypt = config.sops.secrets.consul_encrypt.path;
       performance = {
         raft_multiplier = 5;
