@@ -1,0 +1,16 @@
+keys:
+  - &adminkey age1jvqe2j70h97844nkz34z9k4epx3uahx50cx75ss8mty2dnxlrf7qqv9a0g
+  - &StuPC-WSL_UBUNTU_2204 age1jvf8rd8krchw3ph0w2let8clvyuzcdhq2ug6sm7tx86refc2z5vq4w6lxr
+  - &StuPC-WSL_NIXOS age1t6zzuxzzlfvqfhcvj3vyngfguxrw960c5u9hjwd05k5q9zp7l3gqyjatew
+  - &go3_WSL_NIXOS age187fdx6pc2559tjh03jrcwp6yj8whd70h666g8a0ptyr0z49tfcsssdx6au
+  - &STU_ID age1r86w07gy3nm2ltkqx7wcv94wzneeqmqvcm88nzw4g902kdgwgvdqvjumrj
+  - &ODROID8 age1m3zny0wn4smrwhjrvw8qay8438l06v49h0fg4s3c6mpjyuq28vwsp5wvdk
+creation_rules:
+  - path_regex: host-secrets.yaml$
+    key_groups:
+    - age:
+      - *adminkey
+      - *StuPC-WSL_UBUNTU_2204
+      - *StuPC-WSL_NIXOS
+      - *go3_WSL_NIXOS
+      - *ODROID8
