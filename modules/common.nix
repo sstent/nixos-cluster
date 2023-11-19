@@ -28,6 +28,13 @@
     #   age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
     # };
 
+  # Enable nix flakes
+  nix.package = pkgs.nixFlakes;
+  nix.extraOptions = ''
+    experimental-features = nix-command flakes
+  '';
+nix.nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+
     environment.systemPackages = [
       pkgs.git
       pkgs.ncdu
