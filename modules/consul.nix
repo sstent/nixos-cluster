@@ -6,7 +6,6 @@
   ...
 }: let
   secretstore = config._secretstore;
-
   # oldpkgs = import (builtins.fetchGit {
   #   # Descriptive name to make the store path easier to identify
   #   name = "git_consul_1_9";
@@ -14,17 +13,16 @@
   #   ref = "refs/heads/nixpkgs-unstable";
   #   rev = "3b05df1d13c1b315cecc610a2f3180f6669442f0";
   # }) {};
-  oldpkgs = import (builtins.fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/archive/3b05df1d13c1b315cecc610a2f3180f6669442f0.tar.gz";
-    sha256 = "1dr7kfdl4wvxhml4hd9k77xszl55vbjbb6ssirs2qv53mgw8c24w";
-  }) {};
-
-  myPkg = oldpkgs.consul;
+  # oldpkgs = import (builtins.fetchTarball {
+  #   url = "https://github.com/NixOS/nixpkgs/archive/3b05df1d13c1b315cecc610a2f3180f6669442f0.tar.gz";
+  #   sha256 = "1dr7kfdl4wvxhml4hd9k77xszl55vbjbb6ssirs2qv53mgw8c24w";
+  # }) {};
+  # myPkg = oldpkgs.consul;
 in {
   # virtualisation.docker.enable = true;
   sops.secrets.consul_encrypt = {};
   services.consul = {
-    package = myPkg;
+    # package = myPkg;
     enable = true;
     webUi = true;
     extraConfig = {
