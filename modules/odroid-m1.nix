@@ -29,10 +29,4 @@
   # kernel for serial console access to work well
   boot.kernelParams = ["console=ttyS2,1500000"];
   hardware.deviceTree.name = "rockchip/rk3568-odroid-m1.dtb";
-
-  # Turn on flakes.
-  ##nix.package = pkgs.nixVersions.stable;
-  nix.extraOptions = ''
-    experimental-features = nix-command flakes
-  '';
 }
