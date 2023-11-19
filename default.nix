@@ -7,19 +7,19 @@
 
           ];
 
-          sdImage = {
-            #compressImage = false;
-            populateFirmwareCommands = let
-              configTxt = pkgs.writeText "README" ''
-              Nothing to see here. This empty partition is here because I don't know how to turn its creation off.
-              '';
-            in ''
-              cp ${configTxt} firmware/README
-            '';
-            populateRootCommands = ''
-              ${config.boot.loader.kboot-conf.populateCmd} -c ${config.system.build.toplevel} -d ./files/kboot.conf
-            '';
-            };
+        #   sdImage = {
+        #     #compressImage = false;
+        #     populateFirmwareCommands = let
+        #       configTxt = pkgs.writeText "README" ''
+        #       Nothing to see here. This empty partition is here because I don't know how to turn its creation off.
+        #       '';
+        #     in ''
+        #       cp ${configTxt} firmware/README
+        #     '';
+        #     populateRootCommands = ''
+        #       ${config.boot.loader.kboot-conf.populateCmd} -c ${config.system.build.toplevel} -d ./files/kboot.conf
+        #     '';
+        #     };
 
           #boot.loader.grub.enable = false;
           boot.loader.kboot-conf.enable = true;
