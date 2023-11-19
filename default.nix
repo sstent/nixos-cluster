@@ -56,6 +56,9 @@
         # options = ["uid=0,gid=1000"];
         options = ["guest" "uid=1000"];
     };
+  environment.systemPackages = [
+    pkgs.git
+  ];
 
 
 systemd.services.setleds = {
