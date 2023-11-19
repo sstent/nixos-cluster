@@ -16,7 +16,7 @@
   # }) {};
   oldpkgs = import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/3b05df1d13c1b315cecc610a2f3180f6669442f0.tar.gz";
-    sha256 = "c704ef4a056c53db1a57bca7def48e4d9ed16418c81398488a6071833c10668c";
+    sha256 = "1dr7kfdl4wvxhml4hd9k77xszl55vbjbb6ssirs2qv53mgw8c24w";
   }) {};
 
   myPkg = oldpkgs.consul;
