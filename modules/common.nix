@@ -28,12 +28,12 @@
     #   age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
     # };
 
-  # Enable nix flakes
-  nix.package = pkgs.nixFlakes;
-  nix.extraOptions = ''
-    experimental-features = nix-command flakes
-  '';
-nix.nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+    # Enable nix flakes
+    nix.package = pkgs.nixFlakes;
+    nix.extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
+    nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
 
     environment.systemPackages = [
       pkgs.git
@@ -45,6 +45,5 @@ nix.nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
       settings.PermitRootLogin = "yes";
     };
     users.extraUsers.root.initialPassword = lib.mkForce "odroid";
-  }
-  ;
+  };
 }
