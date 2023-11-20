@@ -22,7 +22,7 @@ in {
   # virtualisation.docker.enable = true;
   sops.secrets.consul_encrypt_json = {
     sopsFile = "${secretstore}/consul_encrypt.json";
-    consul_encrypt_json.format = "binary";
+    format = "binary";
   };
 
   services.consul = {
