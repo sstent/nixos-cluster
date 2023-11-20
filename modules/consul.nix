@@ -23,6 +23,8 @@ in {
   sops.secrets.consul_encrypt_json = {
     sopsFile = "${secretstore}/consul_encrypt.json";
     format = "binary";
+    owner = "consul";
+    group = "consul";
   };
 
   services.consul = {
