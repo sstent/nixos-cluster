@@ -20,7 +20,7 @@
   # myPkg = oldpkgs.consul;
 in {
   # virtualisation.docker.enable = true;
-  sops.secrets.consul_encrypt.json = {
+  sops.secrets."consul_encrypt.json" = {
     sopsFile = "${secretstore}/consul_encrypt.json";
     format = "binary";
     owner = "consul";
@@ -32,7 +32,7 @@ in {
     enable = true;
     webUi = true;
     interface.bind = "end0";
-    extraConfigFiles = [config.sops.secrets.consul_encrypt.json.path];
+    extraConfigFiles = [config.sops.secrets."consul_encrypt.json".path];
     extraConfig = {
       bootstrap = false;
       server = true;
