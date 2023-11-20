@@ -31,6 +31,7 @@ in {
     # package = myPkg;
     enable = true;
     webUi = true;
+    consulAddr = "0.0.0.0:8500";
     interface.bind = "end0";
     extraConfigFiles = [config.sops.secrets."consul_encrypt.json".path];
     extraConfig = {
