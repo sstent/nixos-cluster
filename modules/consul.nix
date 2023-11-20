@@ -27,6 +27,11 @@ in {
     group = "consul";
   };
 
+  networking.firewall = {
+    allowedTCPPorts = [8300 8301 8302 8500 8600];
+    allowedUDPPorts = [8301 3802 8600];
+  };
+
   services.consul = {
     # package = myPkg;
     enable = true;
