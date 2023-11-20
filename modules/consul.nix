@@ -31,13 +31,20 @@ in {
     # package = myPkg;
     enable = true;
     webUi = true;
-    consulAddr = "0.0.0.0:8500";
+    # consulAddr = "0.0.0.0:8500";
     interface.bind = "end0";
     extraConfigFiles = [config.sops.secrets."consul_encrypt.json".path];
     extraConfig = {
       bootstrap = false;
       server = true;
       bootstrap_expect = 3;
+      addresses = {
+        dns = "0.0.0.0";
+        grpc = "0.0.0.0";
+        http = "0.0.0.0";
+        https = "0.0.0.0";
+      };
+
       performance = {
         raft_multiplier = 5;
       };
