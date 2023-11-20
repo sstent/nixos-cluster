@@ -6,6 +6,10 @@
   ...
 }: {
   virtualisation.docker.enable = true;
+  networking.firewall = {
+    allowedTCPPorts = [4646 4647 4648];
+    allowedUDPPorts = [4648];
+  };
 
   services.nomad = {
     package = pkgs.nomad_1_6;
