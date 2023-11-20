@@ -11,7 +11,7 @@
 
   nixpkgs.hostPlatform.system = "aarch64-linux";
   networking.hostName = "odroid5";
-  networking.interfaces.eth0.ipv4.addresses = [
+  networking.interfaces.end0.ipv4.addresses = [
     {
       address = "192.168.1.225";
       prefixLength = 24;
