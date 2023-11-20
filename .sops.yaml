@@ -14,6 +14,7 @@ creation_rules:
       - *StuPC-WSL_UBUNTU_2204
       - *StuPC-WSL_NIXOS
       - *go3_WSL_NIXOS
+      - *ODROID5
       - *ODROID8
   - path_regex: secrets/.*$
     key_groups:
@@ -22,4 +23,5 @@ creation_rules:
       - *STU_ID
       - *StuPC-WSL_NIXOS
       - *go3_WSL_NIXOS
+      - *ODROID5
       - *ODROID8
