@@ -18,6 +18,6 @@
     device = "/dev/sda1";
     fsType = "ext4";
     # options = ["uid=0,gid=1000"];
-    options = ["_netdev" "uid=1000"];
+    options = ["_netdev"];
   };
 }
