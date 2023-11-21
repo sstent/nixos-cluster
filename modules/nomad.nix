@@ -20,7 +20,7 @@
       server = {
         enabled = true;
         bootstrap_expect = 3;
-        start_join = ["192.168.1.221" "192.168.1.225" "192.168.1.226" "192.168.1.227" "192.168.1.222" "192.168.1.223" "192.168.1.224"];
+        start_join = ["192.168.1.225" "192.168.1.226" "192.168.1.227" "192.168.1.228"];
         rejoin_after_leave = false;
         enabled_schedulers = ["service" "batch" "system"];
         num_schedulers = 4;
