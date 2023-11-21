@@ -12,7 +12,7 @@
   nixpkgs.hostPlatform.system = "aarch64-linux";
   networking.hostName = "odroid8";
 
-    networking.interfaces.end0.ipv4.addresses = [
+  networking.interfaces.end0.ipv4.addresses = [
     {
       address = "192.168.1.228";
       prefixLength = 24;
