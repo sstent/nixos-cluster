@@ -40,6 +40,7 @@
       pkgs.git
       pkgs.ncdu
       pkgs.killall
+      pkgs.dig
     ];
 
     networking.search = ["node.dc1.consul" "service.dc1.consul"];
