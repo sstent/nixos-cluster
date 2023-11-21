@@ -28,10 +28,10 @@
   };
 
   fileSystems."/mnt/ClusterStore" = {
-    device = "//dev/sda";
+    device = "/dev/sda1";
     fsType = "ext4";
     # options = ["uid=0,gid=1000"];
-    options = ["guest" "uid=1000"];
+    options = ["_netdev" "guest" "uid=1000"];
   };
 
   networking.defaultGateway = "192.168.1.1";
