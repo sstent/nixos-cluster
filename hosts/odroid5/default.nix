@@ -18,6 +18,12 @@
     }
   ];
 
+  services.openiscsi = {
+    enable = true;
+    name = "iqn.2020-08.org.linux-iscsi.initiatorhost:${config.networking.hostName}";
+    package = pkgs.openiscsi;
+  };
+
   networking.defaultGateway = "192.168.1.1";
   networking.nameservers = ["192.168.1.1" "8.8.8.8"];
 }
