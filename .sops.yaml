@@ -6,7 +6,7 @@ keys:
   - &STU_ID age1r86w07gy3nm2ltkqx7wcv94wzneeqmqvcm88nzw4g902kdgwgvdqvjumrj
   - &ODROID5 age1jcyln7aswelnkarvgs49frwx452jsm60rp0qls2ctsf8wmt89czskt5dk2
   - &ODROID6 age1qclduygfy3le5qu73ufaz7tuf046aaakazk6tuftvqtg7n0jeeaszvdc8u
-  - &ODROID7 age1jcyln7aswelnkarvgs49frwx452jsm60rp0qls2ctsf8wmt89czskt5dk2
+  - &ODROID7 age1m970pg0gycn8ku8qr0es38zqzvtc2zrqqdrp3ammc9dhu392fc0sfqw7hm
   - &ODROID8 age1m3zny0wn4smrwhjrvw8qay8438l06v49h0fg4s3c6mpjyuq28vwsp5wvdk
 creation_rules:
   - path_regex: host-secrets.yaml$
