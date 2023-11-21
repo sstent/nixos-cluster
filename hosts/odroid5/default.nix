@@ -20,7 +20,10 @@
 
   services.openiscsi = {
     enable = true;
-    name = "iqn.2020-08.org.linux-iscsi.initiatorhost:${config.networking.hostName}";
+    name = "iqn.2013-03.com.wdc:mycloudpr2100:clusterstore";
+    enableAutoLoginOut = true;
+    discoverPortal = "192.168.1.109";
+
     package = pkgs.openiscsi;
   };
 
