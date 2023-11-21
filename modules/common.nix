@@ -42,7 +42,7 @@
       pkgs.killall
     ];
 
-    config.networking.search = ["node.dc1.consul" "service.dc1.consul"];
+    networking.search = ["node.dc1.consul" "service.dc1.consul"];
 
     services.openssh = {
       enable = true;
