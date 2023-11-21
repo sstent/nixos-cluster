@@ -7,8 +7,8 @@
 }: {
   virtualisation.docker.enable = true;
   networking.firewall = {
-    allowedTCPPorts = [4646 4647 4648];
-    allowedUDPPorts = [4646 4647 4648];
+    allowedTCPPorts = [4646 4647 4648 8123];
+    allowedUDPPorts = [4646 4647 4648 8123];
   };
 
   services.nomad = {
