@@ -28,6 +28,20 @@
           globalModules
           ++ [./hosts/odroid5];
       };
+      odroid6 = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        specialArgs = {inherit inputs;};
+        modules =
+          globalModules
+          ++ [./hosts/odroid6];
+      };
+      odroid7 = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        specialArgs = {inherit inputs;};
+        modules =
+          globalModules
+          ++ [./hosts/odroid7];
+      };
       odroid8 = nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
         specialArgs = {inherit inputs;};
