@@ -5,6 +5,8 @@ keys:
   - &go3_WSL_NIXOS age187fdx6pc2559tjh03jrcwp6yj8whd70h666g8a0ptyr0z49tfcsssdx6au
   - &STU_ID age1r86w07gy3nm2ltkqx7wcv94wzneeqmqvcm88nzw4g902kdgwgvdqvjumrj
   - &ODROID5 age1jcyln7aswelnkarvgs49frwx452jsm60rp0qls2ctsf8wmt89czskt5dk2
+  - &ODROID6 age1qclduygfy3le5qu73ufaz7tuf046aaakazk6tuftvqtg7n0jeeaszvdc8u
+  - &ODROID7 age1jcyln7aswelnkarvgs49frwx452jsm60rp0qls2ctsf8wmt89czskt5dk2
   - &ODROID8 age1m3zny0wn4smrwhjrvw8qay8438l06v49h0fg4s3c6mpjyuq28vwsp5wvdk
 creation_rules:
   - path_regex: host-secrets.yaml$
@@ -15,6 +17,8 @@ creation_rules:
       - *StuPC-WSL_NIXOS
       - *go3_WSL_NIXOS
       - *ODROID5
+      - *ODROID6
+      - *ODROID7
       - *ODROID8
   - path_regex: secrets/.*$
     key_groups:
@@ -24,4 +28,6 @@ creation_rules:
       - *StuPC-WSL_NIXOS
       - *go3_WSL_NIXOS
       - *ODROID5
+      - *ODROID6
+      - *ODROID7
       - *ODROID8
