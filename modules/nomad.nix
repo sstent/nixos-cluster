@@ -30,6 +30,7 @@
         deployment_gc_threshold = "1h";
         encrypt = "";
         raft_protocol = 3;
+        raft_multiplier = 5;
       };
 
       client = {

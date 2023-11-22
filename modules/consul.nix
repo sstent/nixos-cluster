@@ -51,7 +51,7 @@ in {
       };
 
       performance = {
-        raft_multiplier = 5;
+        raft_multiplier = 7;
       };
       recursors = [
         "192.168.1.1"
