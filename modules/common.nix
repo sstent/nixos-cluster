@@ -45,7 +45,7 @@
     ];
 
     networking.search = ["node.dc1.consul" "service.dc1.consul"];
-    networking.firewall.enable = false;
+    # networking.firewall.enable = false;
 
     services.openssh = {
       enable = true;
