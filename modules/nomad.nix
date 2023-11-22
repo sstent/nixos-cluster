@@ -6,9 +6,11 @@
   ...
 }: {
   virtualisation.docker.enable = true;
+
   networking.firewall = {
     allowedTCPPorts = [4646 4647 4648 8123 80 443 8443];
     allowedUDPPorts = [4646 4647 4648 8123 80 443 8443];
+    trustedInterfaces = ["docker0"];
   };
 
   #
