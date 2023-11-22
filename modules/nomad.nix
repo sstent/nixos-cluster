@@ -13,7 +13,7 @@
 
   #
   systemd.tmpfiles.rules = [
-    "d /mount/configs/postgres 0770 1000 1000 -"
+    "d /mnt/configs/postgres 0770 1000 1000 -"
   ];
 
   services.nomad = {
