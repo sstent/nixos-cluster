@@ -11,6 +11,11 @@
     allowedUDPPorts = [4646 4647 4648 8123];
   };
 
+  #
+  systemd.tmpfiles.rules = [
+    "d /mount/configs/postgres 0770 1000 1000 -"
+  ];
+
   services.nomad = {
     package = pkgs.nomad_1_6;
     dropPrivileges = false;
