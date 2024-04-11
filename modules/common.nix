@@ -7,7 +7,7 @@
 }: {
   imports = [
     ./mnt-public.nix
-    ./mnt-clusterstore.nix
+    # ./mnt-clusterstore.nix
     ./nomad.nix
     ./consul.nix
     ./odroid-m1-setleds.nix
@@ -25,7 +25,7 @@
 
   config = {
     system.stateVersion = "23.11"; # Did you read the comment?
-
+    nixpkgs.config.allowUnfree = true;
     sops = {
       defaultSopsFile = "${config._secretstore}/host-secrets.yaml";
       age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
