@@ -32,7 +32,8 @@
     };
 
     # Enable nix flakes
-    nix.package = pkgs.nixFlakes;
+    # nix.package = pkgs.nixFlakes;  #Deprecated
+    nix.package = pkgs.nixVersions.stable;
     nix.extraOptions = ''
       experimental-features = nix-command flakes
     '';

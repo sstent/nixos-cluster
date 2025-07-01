@@ -14,11 +14,11 @@
 
   networking.interfaces.end0.ipv4.addresses = [
     {
-      address = "192.168.1.228";
+      address = "192.168.4.228";
       prefixLength = 24;
     }
   ];
 
-  networking.defaultGateway = "192.168.1.1";
-  networking.nameservers = ["192.168.1.1" "8.8.8.8"];
+  networking.defaultGateway = "192.168.4.1";
+  networking.nameservers = ["192.168.4.1" "8.8.8.8"];
 }

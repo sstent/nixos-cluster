@@ -58,7 +58,7 @@
   ];
 
   services.nomad = {
-    package = pkgs.nomad_1_6;
+    package = pkgs.nomad_1_9;
     dropPrivileges = false;
     enableDocker = true;
     enable = true;
