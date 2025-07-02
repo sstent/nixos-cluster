@@ -52,6 +52,8 @@ in {
   config = let
     args = "-g ${toString cfg.configurationLimit} -n ${config.hardware.deviceTree.name}";
   in
+    
+    
     mkIf cfg.enable {
       system.build.installBootLoader = lib.mkForce "${builder} ${args} -c";
       system.boot.loader.id = "kboot-conf";
