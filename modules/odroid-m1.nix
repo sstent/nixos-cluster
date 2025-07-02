@@ -11,6 +11,7 @@
 
   boot.loader.grub.enable = false;
   boot.loader.kboot-conf.enable = true;
+  boot.loader.kboot-conf.debug = true;
   # Use kernel >6.6
   boot.kernelPackages = pkgs.linuxPackages_latest;
   # Stop ZFS breasking the build
