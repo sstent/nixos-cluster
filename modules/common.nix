@@ -10,8 +10,6 @@
     # ./mnt-clusterstore.nix
     ./nomad.nix
     ./consul.nix
-    ./odroid-m1-setleds.nix
-    ./odroid-m1.nix
     ./cifs.nix
     inputs.sops-nix.nixosModules.sops
   ];

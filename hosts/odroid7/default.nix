@@ -7,6 +7,8 @@
 }: {
   imports = [
     ./hardware-configuration.nix
+    ./odroid-m1-setleds.nix
+    ./odroid-m1.nix
   ];
 
   nixpkgs.hostPlatform.system = "aarch64-linux";
