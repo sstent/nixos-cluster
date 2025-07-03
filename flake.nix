@@ -49,6 +49,13 @@
           globalModules
           ++ [./hosts/odroid8];
       };
+      opti1 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = {inherit inputs;};
+        modules =
+          globalModules
+          ++ [./hosts/opti1];
+      };
     };
   };
 }
