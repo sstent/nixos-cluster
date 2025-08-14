@@ -7,8 +7,9 @@
 }: {
   imports = [
     ./hardware-configuration.nix
-    ./odroid-m1-setleds.nix
-    ./odroid-m1.nix
+    ../../modules/odroid-m1-setleds.nix
+    ../../modules/odroid-m1.nix
+    ../../modules/cifs.nix
   ];
 
   nixpkgs.hostPlatform.system = "aarch64-linux";
@@ -17,7 +18,7 @@
   networking.interfaces.end0.ipv4.addresses = [
     {
       address = "192.168.4.228";
-      prefixLength = 24;
+      prefixLength = 22;
     }
   ];
 

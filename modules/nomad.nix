@@ -58,7 +58,7 @@
   ];
 
   services.nomad = {
-    package = pkgs.nomad_1_9;
+    package = pkgs.nomad_1_10;
     dropPrivileges = false;
     enableDocker = true;
     enable = true;
@@ -66,7 +66,7 @@
       server = {
         enabled = true;
         bootstrap_expect = 3;
-        start_join = ["192.168.4.225" "192.168.4.226" "192.168.4.227" "192.168.4.228"];
+        start_join = [ "192.168.4.226" "192.168.4.227" "192.168.4.228" "192.168.4.36"];
         rejoin_after_leave = false;
         enabled_schedulers = ["service" "batch" "system"];
         num_schedulers = 4;
@@ -83,7 +83,7 @@
         enabled = true;
         node_class = "";
         no_host_uuid = false;
-        servers = ["192.168.4.221:4647" "192.168.4.225:4647" "192.168.4.226:4647" "192.168.4.227:4647" "192.168.4.222:4647" "192.168.4.223:4647" "192.168.4.224:4647"];
+        servers = ["192.168.4.36:4647" "192.168.4.226:4647" "192.168.4.227:4647" "192.168.4.228:4647"];
         max_kill_timeout = "30s";
         network_speed = 0;
         cpu_total_compute = 0;
