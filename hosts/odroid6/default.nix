@@ -23,5 +23,4 @@
   ];
 
   networking.defaultGateway = "192.168.4.1";
-  networking.nameservers = ["192.168.4.1" "8.8.8.8"];
-}
+networking.nameservers = ["192.168.4.250" "192.168.4.1" "8.8.8.8"];}
