@@ -10,7 +10,6 @@
     # ./mnt-clusterstore.nix
     ./nomad.nix
     ./consul.nix
-    ./cifs.nix
     inputs.sops-nix.nixosModules.sops
   ];
 
@@ -20,6 +19,20 @@
     default = "${inputs.self}/secrets";
     description = "Path to the Secrets storage";
   };
+
+  options.custom._Networkinterface = lib.mkOption {
+    type = lib.types.str;
+    default = "end0";
+    description = "Network interface name to bind to.";
+    example = "enp3s0";
+  };
+
+  options.custom.VIP_Priority = lib.mkOption {
+    type = lib.types.int;
+    default = 50;
+    description = "Keep alived prority for voting";
+  };
+
 
   config = {
     system.stateVersion = "23.11"; # Did you read the comment?

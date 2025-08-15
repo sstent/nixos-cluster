@@ -6,6 +6,8 @@
   ...
 }: let
   secretstore = config._secretstore;
+  NetworkInterface = config.custom._Networkinterface;
+
   # oldpkgs = import (builtins.fetchGit {
   #   # Descriptive name to make the store path easier to identify
   #   name = "git_consul_1_9";
@@ -25,6 +27,9 @@ in {
     format = "binary";
     owner = "consul";
     group = "consul";
+
+
+
   };
 
   networking.firewall = {
@@ -37,7 +42,7 @@ in {
     enable = true;
     webUi = true;
     # consulAddr = "0.0.0.0:8500";
-    interface.bind = "end0";
+    interface.bind = "${NetworkInterface}";
     extraConfigFiles = [config.sops.secrets."consul_encrypt.json".path];
     extraConfig = {
       bootstrap = false;
@@ -54,18 +59,19 @@ in {
         raft_multiplier = 7;
       };
       recursors = [
-        "192.168.1.1"
+        "192.168.4.1"
         "8.8.8.8"
       ];
 
       retry_join = [
-        "192.168.1.221"
-        "192.168.1.222"
-        "192.168.1.225"
-        "192.168.1.226"
-        "192.168.1.227"
-        "192.168.1.223"
-        "192.168.1.224"
+        "192.168.4.221"
+        "192.168.4.222"
+        "192.168.4.225"
+        "192.168.4.226"
+        "192.168.4.227"
+        "192.168.4.223"
+        "192.168.4.224"
+        "192.168.4.36"
       ];
     };
   };

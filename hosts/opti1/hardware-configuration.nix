@@ -12,7 +12,11 @@
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
-
+  boot.kernelParams = [ "net.ifnames=0" "biosdevname=1" ];
+  systemd.network.links."10-custom-ethernet" = {
+    matchConfig.MACAddress = "d8:9e:f3:83:df:d6";
+    linkConfig.Name = "end0";
+  };
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/7245da7d-e72b-403a-8b72-e99cdd8c02fa";
       fsType = "ext4";
@@ -27,7 +31,7 @@
   networking.useDHCP = lib.mkDefault true;
   # networking.interfaces.enp0s31f6.useDHCP = lib.mkDefault true;
   # networking.interfaces.wlp0s20f0u3.useDHCP = lib.mkDefault true;
-
+  # networking.usePredictableInterfaceNames = true;
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
