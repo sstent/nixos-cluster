@@ -20,7 +20,8 @@
       prefixLength = 22;
     }
   ];
-
+  
+  services.syncplay.enable = true;
 
 
   networking.defaultGateway = "192.168.4.1";
