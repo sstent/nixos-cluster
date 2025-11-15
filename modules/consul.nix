@@ -33,9 +33,37 @@ in {
   };
 
   networking.firewall = {
-    allowedTCPPorts = [8300 8301 8302 8500 8600];
-    allowedUDPPorts = [8301 3802 8600];
+    enable = true;
+    allowedTCPPorts = [8300 8301 8302 8500 8600 53];
+    allowedUDPPorts = [8301 3802 8600 53];
   };
+
+# Add the iptables rules directly via a systemd service
+  systemd.services.consul-dns-redirect = {
+    description = "Redirect DNS port 53 to Consul port 8600";
+    after = [ "network.target" "firewall.service" ];
+    wantedBy = [ "multi-user.target" ];
+    
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    
+    script = ''
+      ${pkgs.iptables}/bin/iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 8600
+      ${pkgs.iptables}/bin/iptables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-port 8600
+      ${pkgs.iptables}/bin/iptables -t nat -A OUTPUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-port 8600
+      ${pkgs.iptables}/bin/iptables -t nat -A OUTPUT -p tcp -d 127.0.0.1 --dport 53 -j REDIRECT --to-port 8600
+    '';
+    
+    preStop = ''
+      ${pkgs.iptables}/bin/iptables -t nat -D PREROUTING -p udp --dport 53 -j REDIRECT --to-port 8600 || true
+      ${pkgs.iptables}/bin/iptables -t nat -D PREROUTING -p tcp --dport 53 -j REDIRECT --to-port 8600 || true
+      ${pkgs.iptables}/bin/iptables -t nat -D OUTPUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-port 8600 || true
+      ${pkgs.iptables}/bin/iptables -t nat -D OUTPUT -p tcp -d 127.0.0.1 --dport 53 -j REDIRECT --to-port 8600 || true
+    '';
+  };
+
 
   services.consul = {
     # package = myPkg;
