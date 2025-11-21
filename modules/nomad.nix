@@ -5,7 +5,20 @@
   inputs,
   ...
 }: {
-  virtualisation.docker.enable = true;
+  virtualisation.docker = {
+    enable = true;
+    # Configure insecure registries
+    daemon.settings = {
+      ipv6 = false;  # Add this line to disable IPv6
+      insecure-registries = [
+        "localhost:5000"
+        "gitea.service.dc1.consul:80"
+        "192.168.4.109:5000"
+      ];
+    };
+};
+
+
 
   networking.firewall = {
     allowedTCPPorts = [

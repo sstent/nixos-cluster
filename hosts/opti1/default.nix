@@ -7,7 +7,7 @@
 }: {
   imports = [
     ./hardware-configuration.nix
-    # ../../modules/keepalived.nix
+    ../../modules/keepalived.nix
   ];
 
   nixpkgs.hostPlatform.system = "x86_64-linux";

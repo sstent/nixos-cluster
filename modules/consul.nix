@@ -7,69 +7,26 @@
 }: let
   secretstore = config._secretstore;
   NetworkInterface = config.custom._Networkinterface;
-
-  # oldpkgs = import (builtins.fetchGit {
-  #   # Descriptive name to make the store path easier to identify
-  #   name = "git_consul_1_9";
-  #   url = "https://github.com/NixOS/nixpkgs/";
-  #   ref = "refs/heads/nixpkgs-unstable";
-  #   rev = "3b05df1d13c1b315cecc610a2f3180f6669442f0";
-  # }) {};
-  # oldpkgs = import (builtins.fetchTarball {
-  #   url = "https://github.com/NixOS/nixpkgs/archive/3b05df1d13c1b315cecc610a2f3180f6669442f0.tar.gz";
-  #   sha256 = "1dr7kfdl4wvxhml4hd9k77xszl55vbjbb6ssirs2qv53mgw8c24w";
-  # }) {};
-  # myPkg = oldpkgs.consul;
 in {
-  # virtualisation.docker.enable = true;
   sops.secrets."consul_encrypt.json" = {
     sopsFile = "${secretstore}/consul_encrypt.json";
     format = "binary";
     owner = "consul";
     group = "consul";
-
-
-
   };
-
+  
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [8300 8301 8302 8500 8600 53];
-    allowedUDPPorts = [8301 3802 8600 53];
+    # Remove port 53 - CoreDNS will handle it
+    allowedTCPPorts = [8300 8301 8302 8500 8600];
+    allowedUDPPorts = [8301 3802 8600];
   };
 
-# Add the iptables rules directly via a systemd service
-  systemd.services.consul-dns-redirect = {
-    description = "Redirect DNS port 53 to Consul port 8600";
-    after = [ "network.target" "firewall.service" ];
-    wantedBy = [ "multi-user.target" ];
-    
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    
-    script = ''
-      ${pkgs.iptables}/bin/iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 8600
-      ${pkgs.iptables}/bin/iptables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-port 8600
-      ${pkgs.iptables}/bin/iptables -t nat -A OUTPUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-port 8600
-      ${pkgs.iptables}/bin/iptables -t nat -A OUTPUT -p tcp -d 127.0.0.1 --dport 53 -j REDIRECT --to-port 8600
-    '';
-    
-    preStop = ''
-      ${pkgs.iptables}/bin/iptables -t nat -D PREROUTING -p udp --dport 53 -j REDIRECT --to-port 8600 || true
-      ${pkgs.iptables}/bin/iptables -t nat -D PREROUTING -p tcp --dport 53 -j REDIRECT --to-port 8600 || true
-      ${pkgs.iptables}/bin/iptables -t nat -D OUTPUT -p udp -d 127.0.0.1 --dport 53 -j REDIRECT --to-port 8600 || true
-      ${pkgs.iptables}/bin/iptables -t nat -D OUTPUT -p tcp -d 127.0.0.1 --dport 53 -j REDIRECT --to-port 8600 || true
-    '';
-  };
-
-
+  # REMOVE the consul-dns-redirect service - no longer needed
+  
   services.consul = {
-    # package = myPkg;
     enable = true;
     webUi = true;
-    # consulAddr = "0.0.0.0:8500";
     interface.bind = "${NetworkInterface}";
     extraConfigFiles = [config.sops.secrets."consul_encrypt.json".path];
     extraConfig = {
@@ -77,12 +34,12 @@ in {
       server = true;
       bootstrap_expect = 3;
       addresses = {
-        dns = "0.0.0.0";
+        # Bind DNS only to localhost since CoreDNS will forward to it
+        dns = "127.0.0.1";
         grpc = "0.0.0.0";
         http = "0.0.0.0";
         https = "0.0.0.0";
       };
-
       performance = {
         raft_multiplier = 7;
       };
@@ -90,7 +47,7 @@ in {
         "192.168.4.1"
         "8.8.8.8"
       ];
-
+      alt_domain = "fbleagh.duckdns.org";
       retry_join = [
         "192.168.4.221"
         "192.168.4.222"

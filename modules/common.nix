@@ -10,6 +10,7 @@
     # ./mnt-clusterstore.nix
     ./nomad.nix
     ./consul.nix
+    ./coredns.nix
     inputs.sops-nix.nixosModules.sops
   ];
 
@@ -55,6 +56,7 @@
       pkgs.ncdu
       pkgs.killall
       pkgs.dig
+      pkgs.jq
     ];
 
     networking.search = ["node.dc1.consul" "service.dc1.consul"];
