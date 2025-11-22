@@ -10,6 +10,8 @@
     # Configure insecure registries
     daemon.settings = {
       ipv6 = false;  # Add this line to disable IPv6
+      dns = ["192.168.4.250" "8.8.8.8"];
+      dns-search = ["node.dc1.consul" "service.dc1.consul"];
       insecure-registries = [
         "localhost:5000"
         "gitea.service.dc1.consul:80"

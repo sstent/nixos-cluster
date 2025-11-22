@@ -62,6 +62,11 @@
     networking.search = ["node.dc1.consul" "service.dc1.consul"];
     # networking.firewall.enable = false;
 
+    boot.kernel.sysctl = {
+     "net.ipv6.conf.all.disable_ipv6" = 1;
+     "net.ipv6.conf.default.disable_ipv6" = 1;
+    };
+
     services.openssh = {
       enable = true;
       settings.PermitRootLogin = "yes";
