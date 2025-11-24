@@ -4,115 +4,274 @@
   config,
   ...
 }: let
-  # 1. Merged Hosts Template
-  consulAllHostsTemplate = pkgs.writeText "consul-all-hosts.ctmpl" ''
-# --- Static Hosts from Consul KV ---
-{{ printf "\n" }}
-{{- range ls "dns/hosts" -}}
-{{ .Value }} {{ .Key }}
-{{ printf "\n" }}
-{{- end -}}
-
-# --- Dynamic Hosts from Consul Services (Traefik Tags) ---
-{{ printf "\n" }}
-{{- range services -}}
-  {{- range service .Name -}}
-    {{- /* Determine IP: Use Service Address, fall back to Node Address */ -}}
-    {{- $ip := .Address -}}
-    {{- if eq $ip "" -}}
-      {{- $ip = .NodeAddress -}}
-    {{- end -}}
-
-    {{- /* Scan Tags */ -}}
-    {{- range .Tags -}}
-      {{- if . | regexMatch "traefik.http.routers.*.rule=Host" -}}
-        
-        {{- /* 1. Extract content inside Host(...) */ -}}
-        {{- $content := . | regexReplaceAll ".*Host\\(([^)]+)\\).*" "$1" -}}
-
-        {{- /* 2. Clean up quotes and spaces */ -}}
-        {{- $clean := $content | regexReplaceAll "[`'\"\\s]" "" -}}
-
-        {{- /* 3. Split by comma and print */ -}}
-        {{- range split "," $clean -}}
-          {{- if ne . "" -}}
-{{ $ip }} {{ . }}
-{{ printf "\n" }}
-          {{- end -}}
-        {{- end -}}
-      {{- end -}}
-    {{- end -}}
-  {{- end -}}
-{{- end -}}
+  # Script to generate DNS records from Consul services with Traefik tags
+  consulDnsSync = pkgs.writeShellScript "consul-dns-sync" ''
+    #!/usr/bin/env bash
+    set -euo pipefail
+    
+    LOCK_FILE="/var/run/consul-dns-sync.lock"
+    HOSTS_FILE="/var/lib/coredns/consul-hosts"
+    TEMP_FILE="/tmp/consul-hosts.tmp"
+    LAST_UPDATE_FILE="/var/run/consul-dns-sync.last"
+    MIN_UPDATE_INTERVAL=5  # Minimum seconds between updates
+    
+    # Simple file-based locking to prevent concurrent runs
+    if [ -f "$LOCK_FILE" ]; then
+      LOCK_AGE=$(($(date +%s) - $(stat -c %Y "$LOCK_FILE" 2>/dev/null || echo 0)))
+      if [ $LOCK_AGE -lt 60 ]; then
+        echo "[$(date)] Sync already running, skipping" >&2
+        exit 0
+      else
+        echo "[$(date)] Stale lock detected, removing" >&2
+        rm -f "$LOCK_FILE"
+      fi
+    fi
+    
+    # Check if we updated too recently (debouncing)
+    if [ -f "$LAST_UPDATE_FILE" ]; then
+      LAST_UPDATE=$(cat "$LAST_UPDATE_FILE")
+      CURRENT_TIME=$(date +%s)
+      TIME_SINCE_LAST=$((CURRENT_TIME - LAST_UPDATE))
+      
+      if [ $TIME_SINCE_LAST -lt $MIN_UPDATE_INTERVAL ]; then
+        echo "[$(date)] Updated $TIME_SINCE_LAST seconds ago, debouncing (min: $MIN_UPDATE_INTERVAL)" >&2
+        exit 0
+      fi
+    fi
+    
+    touch "$LOCK_FILE"
+    trap "rm -f $LOCK_FILE" EXIT
+    
+    echo "[$(date)] Starting DNS sync from Consul" >&2
+    
+    # Query Consul API directly (more reliable than stdin during flapping)
+    SERVICES=$(${pkgs.curl}/bin/curl -sf http://localhost:8500/v1/health/state/any 2>/dev/null || echo "[]")
+    
+    if [ "$SERVICES" = "[]" ] || [ -z "$SERVICES" ]; then
+      echo "[$(date)] Failed to fetch services from Consul, keeping existing hosts" >&2
+      exit 1
+    fi
+    
+    # Generate hosts file from services with traefik tags
+    echo "# Auto-generated from Consul services - $(date)" > "$TEMP_FILE"
+    
+    # Parse the Consul services data
+    echo "$SERVICES" | ${pkgs.jq}/bin/jq -r '
+      .[] | 
+      select(.Service.Tags != null) |
+      {
+        tags: .Service.Tags,
+        address: (.Service.Address // .Node.Address),
+        port: .Service.Port,
+        status: .Status
+      } |
+      select(.status == "passing" or .status == "warning") |
+      .tags[] |
+      select(startswith("traefik.http.routers.") and contains(".rule=Host")) |
+      . as $tag |
+      ($tag | capture("Host\\((?<hosts>[^)]+)\\)") | .hosts | gsub("[`\"\\s]"; "") | split(",")[]) as $host |
+      {
+        host: $host,
+        address: input.address
+      }
+    ' 2>/dev/null | ${pkgs.jq}/bin/jq -s 'unique_by(.host) | .[]' 2>/dev/null | while read -r line; do
+      HOST=$(echo "$line" | ${pkgs.jq}/bin/jq -r '.host // empty' 2>/dev/null)
+      ADDRESS=$(echo "$line" | ${pkgs.jq}/bin/jq -r '.address // empty' 2>/dev/null)
+      
+      if [ ! -z "$HOST" ] && [ ! -z "$ADDRESS" ] && [ "$ADDRESS" != "null" ]; then
+        echo "$ADDRESS $HOST" >> "$TEMP_FILE"
+        echo "[$(date)] Added: $ADDRESS -> $HOST" >&2
+      fi
+    done
+    
+    # Add static entries for critical services (always accessible even during flapping)
+    # These ensure you can always reach Nomad/Consul UIs
+    cat >> "$TEMP_FILE" << 'EOF'
+# Static critical services - always available
+192.168.4.250 consul.fbleagh.duckdns.org
+192.168.4.250 nomad.fbleagh.duckdns.org
+EOF
+    
+    # Only update if there were actual changes
+    if ! cmp -s "$TEMP_FILE" "$HOSTS_FILE" 2>/dev/null; then
+      cp "$TEMP_FILE" "$HOSTS_FILE"
+      date +%s > "$LAST_UPDATE_FILE"
+      echo "[$(date)] DNS hosts file updated, reloading CoreDNS" >&2
+      ${pkgs.systemd}/bin/systemctl reload coredns.service 2>/dev/null || true
+    else
+      echo "[$(date)] No changes detected, skipping reload" >&2
+    fi
+    
+    rm -f "$TEMP_FILE"
   '';
-
-  # 2. Wrapper script to ensure clean execution and environment setup
-  consulTemplateWrapper = pkgs.writeShellScript "consul-template-wrapper" ''
-    # Only render the single merged template file
-    ${pkgs.consul-template}/bin/consul-template \
-      -template "${consulAllHostsTemplate}:/etc/coredns/consul-all-hosts:${pkgs.systemd}/bin/systemctl reload coredns" \
-      -log-level info
-  '';
-
 in {
-  # --- CoreDNS Configuration ---
+  # Create CoreDNS configuration file with increased cache and stability
   environment.etc."coredns/Corefile".text = ''
-    # Forward Consul DNS queries to the local Consul Agent
+    # Handle .consul domain - forward ALL to Consul
     consul:53 {
       forward . 127.0.0.1:8600
       cache 30
       errors
-      log
+      log {
+        class error
+      }
     }
 
-    # Handle custom domain
+    # Handle fbleagh.duckdns.org domain
     fbleagh.duckdns.org:53 {
-      # CRITICAL FIX: Use only one hosts file/plugin definition
-      hosts /etc/coredns/consul-all-hosts {
+      # Load dynamic hosts from Consul (now in writable location)
+      hosts /var/lib/coredns/consul-hosts {
+        ttl 60
+        reload 5s
         fallthrough
       }
+      
+      # Forward service.* queries to Consul with retries
+      forward service.dc1.fbleagh.duckdns.org 127.0.0.1:8600 {
+        max_fails 3
+        expire 10s
+        health_check 5s
+      }
+      
+      # Cache aggressively to handle flapping
+      cache 300 {
+        success 4096
+        denial 1024
+        prefetch 10
+      }
+      
       # Fallback to upstream DNS
-      forward . 192.168.4.1 8.8.8.8
-      cache 30
+      forward . 192.168.4.1 8.8.8.8 {
+        max_fails 3
+        expire 10s
+        health_check 5s
+      }
+      
       errors
-      log
+      log {
+        class error
+      }
     }
 
     # Handle all other DNS queries
     .:53 {
-      forward . 192.168.4.1 8.8.8.8
-      cache 30
+      forward . 192.168.4.1 8.8.8.8 {
+        max_fails 3
+        expire 10s
+        health_check 5s
+      }
+      
+      cache 300 {
+        success 4096
+        denial 1024
+      }
+      
       errors
-      log
+      log {
+        class error
+      }
     }
   '';
 
+  # Create initial hosts file with critical services
+  environment.etc."coredns/consul-hosts".text = ''
+    # Placeholder - will be populated by consul-watch
+    # Static critical services - always available
+    192.168.4.250 consul.fbleagh.duckdns.org
+    192.168.4.250 nomad.fbleagh.duckdns.org
+  '';
+
+  # Create writable directory for dynamic hosts file
   systemd.tmpfiles.rules = [
-    "f /etc/coredns/consul-all-hosts 0644 root root - #"
+    "d /var/lib/coredns 0755 root root -"
+    "f /var/lib/coredns/consul-hosts 0644 root root - # Placeholder\n192.168.4.250 consul.fbleagh.duckdns.org\n192.168.4.250 nomad.fbleagh.duckdns.org"
   ];
 
-  # --- Consul Template Service ---
-  systemd.services.consul-template = {
-    description = "Consul Template for CoreDNS Hosts";
+  # Systemd service for Consul watch with rate limiting
+  systemd.services.consul-watch = {
+    description = "Consul watch for DNS updates";
+    after = ["consul.service" "coredns.service"];
+    requires = ["consul.service"];
     wantedBy = ["multi-user.target"];
-    after = ["consul.service" "coredns.service" "network.target"];
-    requires = ["coredns.service"]; 
-
+    
     serviceConfig = {
-      # Use the robust wrapper script
-      ExecStart = "${consulTemplateWrapper}";
-      
-      Restart = "always";
+      Type = "simple";
+      # Use exec mode to avoid shell overhead during flapping
+      ExecStart = "${pkgs.consul}/bin/consul watch -type=service -service=.* -passingonly=false ${consulDnsSync}";
+      Restart = "on-failure";
       RestartSec = "10s";
+      User = "root";
+      
+      # Rate limiting: max 10 starts in 30 seconds
+      StartLimitIntervalSec = 30;
+      StartLimitBurst = 10;
+      
+      # Logging - only errors to reduce noise
+      StandardOutput = "journal";
+      StandardError = "journal";
+      
+      # Resource limits to prevent runaway during flapping
+      CPUQuota = "25%";
+      MemoryMax = "128M";
     };
   };
 
-  # --- CoreDNS Service ---
+  # Initial sync on boot
+  systemd.services.consul-dns-initial-sync = {
+    description = "Initial DNS sync from Consul";
+    after = ["consul.service" "coredns.service"];
+    requires = ["consul.service" "coredns.service"];
+    wantedBy = ["multi-user.target"];
+    
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = pkgs.writeShellScript "initial-sync" ''
+        # Wait for Consul to be ready
+        timeout=60
+        elapsed=0
+        until ${pkgs.curl}/bin/curl -sf http://localhost:8500/v1/status/leader > /dev/null 2>&1; do
+          if [ $elapsed -ge $timeout ]; then
+            echo "Timeout waiting for Consul"
+            exit 1
+          fi
+          echo "Waiting for Consul..."
+          sleep 2
+          elapsed=$((elapsed + 2))
+        done
+        
+        # Run initial sync
+        ${consulDnsSync}
+      '';
+      User = "root";
+      TimeoutStartSec = "90s";
+    };
+  };
+
+  # Backup timer-based sync as fallback (every 5 minutes)
+  systemd.services.consul-dns-timer-sync = {
+    description = "Periodic DNS sync from Consul (fallback)";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${consulDnsSync}";
+      User = "root";
+    };
+  };
+
+  systemd.timers.consul-dns-timer-sync = {
+    description = "Periodic DNS sync timer";
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnBootSec = "5min";
+      OnUnitActiveSec = "5min";
+      RandomizedDelaySec = "30s";
+    };
+  };
+
+  # Create systemd service for CoreDNS
   systemd.services.coredns = {
     description = "CoreDNS DNS server";
+    after = ["network.target"];
     wantedBy = ["multi-user.target"];
-    requires = ["consul.service"];
-    after = ["network.target" "consul.service"];
     
     serviceConfig = {
       Type = "simple";
@@ -120,6 +279,11 @@ in {
       ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR1 $MAINPID";
       Restart = "on-failure";
       RestartSec = "5s";
+      
+      # Rate limiting for reloads
+      ReloadPropagatedFrom = [];
+      
+      # Security hardening
       DynamicUser = true;
       AmbientCapabilities = "CAP_NET_BIND_SERVICE";
       CapabilityBoundingSet = "CAP_NET_BIND_SERVICE";
@@ -127,21 +291,11 @@ in {
       ProtectSystem = "strict";
       ProtectHome = true;
       PrivateTmp = true;
-      ReadWritePaths = "/etc/coredns";
+      ReadWritePaths = "/var/lib/coredns";
     };
   };
 
-  # --- Helper Scripts and Firewall ---
-  environment.systemPackages = [
-    pkgs.consul-template
-    (pkgs.writeShellScriptBin "debug-consul-template" ''
-      echo "Rendering template to stdout..."
-      ${pkgs.consul-template}/bin/consul-template \
-        -template "${consulAllHostsTemplate}:-" \
-        -dry | grep -v "^$"
-    '') # <--- This is the crucial closing of the multi-line string
-  ];
-
+  # Open firewall for CoreDNS
   networking.firewall = {
     allowedTCPPorts = [53];
     allowedUDPPorts = [53];
