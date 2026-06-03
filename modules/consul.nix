@@ -11,9 +11,14 @@ in {
   sops.secrets."consul_encrypt.json" = {
     sopsFile = "${secretstore}/consul_encrypt.json";
     format = "binary";
+    mode = "0400";
     owner = "consul";
     group = "consul";
+    restartUnits = [ "consul.service" ];
   };
+
+  # Give the consul user permission to access the /run/secrets directory
+  users.users.consul.extraGroups = [ "keys" ];
   
   networking.firewall = {
     enable = true;
@@ -35,7 +40,7 @@ in {
       bootstrap_expect = 3;
       addresses = {
         # Bind DNS only to localhost since CoreDNS will forward to it
-        dns = "127.0.0.1";
+        dns = "0.0.0.0";
         grpc = "0.0.0.0";
         http = "0.0.0.0";
         https = "0.0.0.0";

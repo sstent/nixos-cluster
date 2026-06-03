@@ -49,7 +49,7 @@
     
     if [ "$SERVICES" = "[]" ] || [ -z "$SERVICES" ]; then
       echo "[$(date)] Failed to fetch services from Consul, keeping existing hosts" >&2
-      exit 1
+      exit 0
     fi
     
     # Generate hosts file from services with traefik tags
@@ -196,10 +196,18 @@ in {
     
     serviceConfig = {
       Type = "simple";
-      # Use exec mode to avoid shell overhead during flapping
-      ExecStart = "${pkgs.consul}/bin/consul watch -type=service -service=.* -passingonly=false ${consulDnsSync}";
-      Restart = "on-failure";
-      RestartSec = "10s";
+      # Wait for Consul before starting watch, and execute watch
+      ExecStart = pkgs.writeShellScript "run-consul-watch" ''
+        until ${pkgs.curl}/bin/curl -sf http://localhost:8500/v1/status/leader > /dev/null 2>&1; do
+          sleep 2
+        done
+        exec ${pkgs.consul}/bin/consul watch -type=service -service=.* -passingonly=false ${consulDnsSync}
+      '';
+      
+      # Treat connection drops (exit 1) as a graceful reset so it doesn't report as "failed"
+      SuccessExitStatus = [ 1 ];
+      Restart = "always";
+      RestartSec = "5s";
       User = "root";
       
       # Rate limiting: max 10 starts in 30 seconds
