@@ -78,6 +78,7 @@
     enableDocker = true;
     enable = true;
     settings = {
+      bind_addr = ''{{ GetDefaultInterfaces | exclude "address" "192.168.4.250" | attr "address" }}'';
       server = {
         enabled = true;
         bootstrap_expect = 3;

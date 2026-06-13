@@ -38,6 +38,12 @@ in {
       bootstrap = false;
       server = true;
       bootstrap_expect = 3;
+      dns_config = {
+        node_ttl = "30s";
+        service_ttl = {
+          "*" = "30s";
+        };
+      };
       addresses = {
         # Bind DNS only to localhost since CoreDNS will forward to it
         dns = "0.0.0.0";
