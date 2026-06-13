@@ -43,6 +43,9 @@ in {
         service_ttl = {
           "*" = "30s";
         };
+        soa = {
+          min_ttl = 30;
+        };
       };
       addresses = {
         # Bind DNS only to localhost since CoreDNS will forward to it
