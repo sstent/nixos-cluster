@@ -12,6 +12,17 @@ let
     
     # Get IP address of end0 interface
     IP_ADDRESS=$(ip -4 addr show end0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n 1)
+
+    cleanup() {
+      echo "Caught termination signal. Cleaning up..."
+      register_service "standby"
+      if [ -n "$SESSION_ID" ]; then
+        curl -s -X PUT "$CONSUL_URL/v1/session/destroy/$SESSION_ID" > /dev/null
+      fi
+      exit 0
+    }
+    
+    trap cleanup INT TERM
     
     register_service() {
       local state="$1"
@@ -97,7 +108,7 @@ EOF
             echo "Syncing configuration from leader ($LEADER_IP)..."
             # Sync mutable config files, ignoring the external recorder db and log files.
             # Preserves permissions to hass:hass.
-            ${pkgs.rsync}/bin/rsync -a --delete \
+            ${pkgs.rsync}/bin/rsync -a --delete --chown=hass:hass \
               --exclude 'home-assistant.log*' \
               --exclude 'home-assistant_v2.db*' \
               rsync://$LEADER_IP/hass-ha/ $DATA_DIR/
