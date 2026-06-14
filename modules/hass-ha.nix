@@ -22,10 +22,10 @@ let
   "ID": "hass-ha-$NODE_NAME",
   "Name": "hass-ha",
   "Address": "$IP_ADDRESS",
-  "Port": 8123,
+  "Port": 8124,
   "Tags": ["$state", "homeassistant", "global"],
   "Check": {
-    "TCP": "$IP_ADDRESS:8123",
+    "TCP": "$IP_ADDRESS:8124",
     "Interval": "15s",
     "Timeout": "2s"
   }
@@ -38,7 +38,7 @@ EOF
   "ID": "hass-ha-$NODE_NAME",
   "Name": "hass-ha",
   "Address": "$IP_ADDRESS",
-  "Port": 8123,
+  "Port": 8124,
   "Tags": ["$state", "homeassistant", "global"]
 }
 EOF
@@ -167,5 +167,5 @@ in
     };
   };
 
-  networking.firewall.allowedTCPPorts = [ 8123 873 ];
+  networking.firewall.allowedTCPPorts = [ 8124 873 ];
 }
