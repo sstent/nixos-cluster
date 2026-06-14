@@ -16,6 +16,17 @@ let
     register_service() {
       local state="$1"
 
+      local node_payload=$(cat <<EOF
+{
+  "ID": "hass-ha-node-$NODE_NAME",
+  "Name": "hass-ha-node",
+  "Address": "$IP_ADDRESS",
+  "Tags": ["$state", "homeassistant", "cluster-node"]
+}
+EOF
+)
+      curl -s -X PUT -d "$node_payload" "$CONSUL_URL/v1/agent/service/register" > /dev/null
+
       if [ "$state" = "active" ]; then
         local payload=$(cat <<EOF
 {
@@ -32,20 +43,10 @@ let
 }
 EOF
 )
+        curl -s -X PUT -d "$payload" "$CONSUL_URL/v1/agent/service/register" > /dev/null
       else
-        local payload=$(cat <<EOF
-{
-  "ID": "hass-ha-$NODE_NAME",
-  "Name": "hass-ha",
-  "Address": "$IP_ADDRESS",
-  "Port": 8124,
-  "Tags": ["$state", "homeassistant", "global"]
-}
-EOF
-)
+        curl -s -X PUT "$CONSUL_URL/v1/agent/service/deregister/hass-ha-$NODE_NAME" > /dev/null
       fi
-
-      curl -s -X PUT -d "$payload" "$CONSUL_URL/v1/agent/service/register" > /dev/null
     }
 
     # Create session
