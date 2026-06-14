@@ -141,7 +141,7 @@ in {
       }
       
       # Fallback to upstream DNS
-      forward . 192.168.4.1 8.8.8.8 {
+      forward . 8.8.8.8 1.1.1.1 {
         max_fails 3
         expire 10s
         health_check 5s

@@ -10,6 +10,7 @@
     ../../modules/odroid-m1-setleds.nix
     ../../modules/odroid-m1.nix
     ../../modules/keepalived.nix
+    ../../modules/hass-ha.nix
   ];
 
   nixpkgs.hostPlatform.system = "aarch64-linux";
