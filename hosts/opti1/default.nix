@@ -8,6 +8,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/keepalived.nix
+    ../../modules/hass-ha.nix
   ];
 
   nixpkgs.hostPlatform.system = "x86_64-linux";

@@ -3,32 +3,49 @@
 let
   haClusterManager = pkgs.writeShellScriptBin "ha-cluster-manager" ''
     set -e
+    export PATH="${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin:${pkgs.systemd}/bin:${pkgs.curl}/bin:${pkgs.rsync}/bin:${pkgs.openssh}/bin:${pkgs.jq}/bin:$PATH"
 
     LEADER_KEY="hass-ha/leader"
     CONSUL_URL="http://127.0.0.1:8500"
     DATA_DIR="/mnt/hass-ha"
-    NODE_NAME=$(hostname)
+    NODE_NAME=$(cat /etc/hostname)
     
     # Get IP address of end0 interface
-    IP_ADDRESS=$(ip -4 addr show end0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    IP_ADDRESS=$(ip -4 addr show end0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n 1)
     
     register_service() {
-      local state=$1
-      cat <<EOF > /tmp/ha_service.json
-      {
-        "ID": "hass-ha-$NODE_NAME",
-        "Name": "hass-ha",
-        "Tags": ["$state", "homeassistant", "global"],
-        "Address": "$IP_ADDRESS",
-        "Port": 8124,
-        "Check": {
-          "TCP": "$IP_ADDRESS:8124",
-          "Interval": "15s",
-          "Timeout": "2s"
-        }
-      }
+      local state="$1"
+
+      if [ "$state" = "active" ]; then
+        local payload=$(cat <<EOF
+{
+  "ID": "hass-ha-$NODE_NAME",
+  "Name": "hass-ha",
+  "Address": "$IP_ADDRESS",
+  "Port": 8124,
+  "Tags": ["$state", "homeassistant", "global"],
+  "Check": {
+    "TCP": "$IP_ADDRESS:8124",
+    "Interval": "15s",
+    "Timeout": "2s"
+  }
+}
 EOF
-      curl -s -X PUT "$CONSUL_URL/v1/agent/service/register" -d @/tmp/ha_service.json > /dev/null
+)
+      else
+        local payload=$(cat <<EOF
+{
+  "ID": "hass-ha-$NODE_NAME",
+  "Name": "hass-ha",
+  "Address": "$IP_ADDRESS",
+  "Port": 8124,
+  "Tags": ["$state", "homeassistant", "global"]
+}
+EOF
+)
+      fi
+
+      curl -s -X PUT -d "$payload" "$CONSUL_URL/v1/agent/service/register" > /dev/null
     }
 
     # Create session
@@ -82,8 +99,7 @@ EOF
             ${pkgs.rsync}/bin/rsync -a --delete \
               --exclude 'home-assistant.log*' \
               --exclude 'home-assistant_v2.db*' \
-              --chown=hass:hass \
-              root@$LEADER_IP:$DATA_DIR/ $DATA_DIR/
+              rsync://$LEADER_IP/hass-ha/ $DATA_DIR/
           fi
         fi
       fi
@@ -131,4 +147,21 @@ in
       RestartSec = 5;
     };
   };
+
+  services.rsyncd = {
+    enable = true;
+    extraConfig = ''
+      uid = root
+      gid = root
+      use chroot = true
+      max connections = 4
+      
+      [hass-ha]
+        path = /mnt/hass-ha
+        read only = true
+        hosts allow = 192.168.4.0/24 127.0.0.1
+    '';
+  };
+
+  networking.firewall.allowedTCPPorts = [ 8124 873 ];
 }
