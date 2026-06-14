@@ -151,14 +151,18 @@ in
   services.rsyncd = {
     enable = true;
     settings = {
-      hass-ha = {
-        path = "/mnt/hass-ha";
-        "read only" = true;
-        "hosts allow" = "192.168.4.0/24 127.0.0.1";
+      globalSection = {
         uid = "root";
         gid = "root";
         "use chroot" = true;
         "max connections" = 4;
+      };
+      sections = {
+        hass-ha = {
+          path = "/mnt/hass-ha";
+          "read only" = true;
+          "hosts allow" = "192.168.4.0/24 127.0.0.1";
+        };
       };
     };
   };
