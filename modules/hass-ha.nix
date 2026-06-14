@@ -150,17 +150,17 @@ in
 
   services.rsyncd = {
     enable = true;
-    extraConfig = ''
-      uid = root
-      gid = root
-      use chroot = true
-      max connections = 4
-      
-      [hass-ha]
-        path = /mnt/hass-ha
-        read only = true
-        hosts allow = 192.168.4.0/24 127.0.0.1
-    '';
+    settings = {
+      hass-ha = {
+        path = "/mnt/hass-ha";
+        "read only" = true;
+        "hosts allow" = "192.168.4.0/24 127.0.0.1";
+        uid = "root";
+        gid = "root";
+        "use chroot" = true;
+        "max connections" = 4;
+      };
+    };
   };
 
   networking.firewall.allowedTCPPorts = [ 8124 873 ];
