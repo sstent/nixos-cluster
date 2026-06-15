@@ -150,6 +150,7 @@ EOF
       if [ -n "''${RENEW_PID:-}" ]; then
         kill "$RENEW_PID" 2>/dev/null || true
       fi
+      rm -f /run/ha-cluster-leader
       stop_ha
       register_service "standby"
       release_lock
@@ -197,6 +198,7 @@ EOF
         if [ "$WAS_LEADER" = "false" ]; then
           echo "Acquired lock. Promoting to leader..."
           WAS_LEADER=true
+          touch /run/ha-cluster-leader
           register_service "active"
         fi
 
@@ -206,6 +208,7 @@ EOF
         if [ "$WAS_LEADER" = "true" ]; then
           echo "Lost lock. Demoting to standby..."
           WAS_LEADER=false
+          rm -f /run/ha-cluster-leader
           register_service "standby"
         fi
 
@@ -271,11 +274,16 @@ in
     ];
   };
 
-  # PREVENT Home Assistant from starting automatically on boot.
-  # The ha-cluster-manager will start it ONLY when it acquires the lock.
+  # PREVENT Home Assistant from starting automatically on boot or during
+  # NixOS switches. The ha-cluster-manager will start it ONLY when it
+  # acquires the Consul leader lock. The ConditionPathExists guard means
+  # systemd (and switch-to-configuration) won't actually exec HA unless the
+  # cluster manager has written the sentinel file, even if systemd tries to
+  # start the unit.
   systemd.services.home-assistant.wantedBy = lib.mkForce [];
   systemd.services.home-assistant.restartIfChanged = false;
   systemd.services.home-assistant.stopIfChanged = false;
+  systemd.services.home-assistant.unitConfig.ConditionPathExists = "/run/ha-cluster-leader";
 
   environment.systemPackages = [
     haClusterManager
