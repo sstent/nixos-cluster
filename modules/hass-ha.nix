@@ -76,7 +76,7 @@ EOF
       while systemctl is-active --quiet "$unit"; do
         tries=$((tries + 1))
         if [ "$tries" -ge 30 ]; then
-          echo "Warning: $unit still active after ${tries}x1s waiting"
+          echo "Warning: $unit still active after ''${tries}x1s waiting"
           return 1
         fi
         sleep 1
@@ -147,7 +147,7 @@ EOF
 
     cleanup() {
       echo "Caught termination signal. Cleaning up..."
-      if [ -n "${RENEW_PID:-}" ]; then
+      if [ -n "''${RENEW_PID:-}" ]; then
         kill "$RENEW_PID" 2>/dev/null || true
       fi
       stop_ha
