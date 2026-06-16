@@ -87,7 +87,7 @@ EOF
     stop_ha() {
       if systemctl is-active --quiet home-assistant; then
         echo "Stopping Home Assistant..."
-        systemctl stop home-assistant || echo "Warning: systemctl stop home-assistant failed"
+        systemctl stop --no-block home-assistant || echo "Warning: systemctl stop home-assistant failed"
         wait_for_inactive home-assistant || echo "Warning: proceeding even though home-assistant did not fully stop"
       fi
     }
@@ -114,7 +114,7 @@ EOF
     stop_esphome() {
       if systemctl is-active --quiet esphome; then
         echo "Stopping ESPhome..."
-        systemctl stop esphome || echo "Warning: systemctl stop esphome failed"
+        systemctl stop --no-block esphome || echo "Warning: systemctl stop esphome failed"
         wait_for_inactive esphome || echo "Warning: proceeding even though esphome did not fully stop"
       fi
     }
