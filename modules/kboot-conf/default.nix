@@ -105,8 +105,10 @@ with lib; let
       
     } 2>&1 | tee -a "$log_file"
     
-    # Execute the original builder and capture its output
-    if /run/current-system/sw/bin/bash ${builder} ${args} "$@" 2>&1 | tee -a "$log_file"; then
+    # Execute the original builder and capture its output.
+    # Use a temp file to capture exit code correctly — piping to tee
+    # would mask the builder's exit code (tee always exits 0).
+    if /run/current-system/sw/bin/bash ${builder} ${args} "$@" > >(tee -a "$log_file") 2>&1; then
       log "=== KBOOT DEBUG SUCCESS ==="
       echo "Debug log saved to: $log_file" >&2
     else
@@ -162,12 +164,30 @@ in {
   
   config = let
     args = "-g ${toString cfg.configurationLimit} -n ${config.hardware.deviceTree.name}";
-    
+
     # Choose between debug and normal builder
     activeBuilder = if cfg.debug then (mkDebugBuilder args) else builder;
-    
+
+    # Wrapper that ensures /boot is mounted before the builder writes
+    # kboot.conf, then unmounts it again. This is necessary because the
+    # FIRMWARE vfat partition may not be mounted at switch time even when
+    # fileSystems."/boot" is declared with nofail.
+    installScript = pkgs.writeScript "kboot-install" ''
+      #!${pkgs.bash}/bin/bash
+      set -e
+      MOUNTED=0
+      if ! ${pkgs.util-linux}/bin/mountpoint -q /boot; then
+        ${pkgs.util-linux}/bin/mount /boot
+        MOUNTED=1
+      fi
+      ${activeBuilder} ${args} -d /boot/kboot.conf -c "$1"
+      if [ $MOUNTED -eq 1 ]; then
+        ${pkgs.util-linux}/bin/umount /boot
+      fi
+    '';
+
   in mkIf cfg.enable {
-    system.build.installBootLoader = lib.mkForce "${activeBuilder} ${args} -c";
+    system.build.installBootLoader = lib.mkForce "${installScript}";
     system.boot.loader.id = "kboot-conf";
     boot.loader.kboot-conf.populateCmd = "${populateBuilder} ${args}";
     

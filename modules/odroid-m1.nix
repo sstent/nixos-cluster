@@ -10,6 +10,15 @@
   ];
 
   boot.loader.grub.enable = false;
+
+  # Mount the Petitboot FIRMWARE vfat partition at /boot so the kboot-conf
+  # installer can write kboot.conf to it. nofail prevents boot failure if
+  # the partition is temporarily unavailable.
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-label/FIRMWARE";
+    fsType = "vfat";
+    options = [ "nofail" ];
+  };
   boot.loader.kboot-conf.enable = true;
   boot.loader.kboot-conf.debug = true;
   # Use kernel >6.6 (Pinning to 6.6 as newer kernels have a reboot regression on RK3568)
