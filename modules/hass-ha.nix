@@ -111,6 +111,21 @@ EOF
       fi
     }
 
+    stop_esphome() {
+      if systemctl is-active --quiet esphome; then
+        echo "Stopping ESPhome..."
+        systemctl stop esphome || echo "Warning: systemctl stop esphome failed"
+        wait_for_inactive esphome || echo "Warning: proceeding even though esphome did not fully stop"
+      fi
+    }
+
+    start_esphome() {
+      if ! systemctl is-active --quiet esphome; then
+        echo "Starting ESPhome..."
+        systemctl start esphome || echo "Warning: failed to start esphome"
+      fi
+    }
+
     release_lock() {
       if [ -n "$SESSION_ID" ]; then
         curl -s -f -X PUT "$CONSUL_URL/v1/kv/$LEADER_KEY?release=$SESSION_ID" > /dev/null || true
@@ -152,6 +167,7 @@ EOF
       fi
       rm -f /run/ha-cluster-leader
       stop_ha
+      stop_esphome
       register_service "standby"
       release_lock
       if [ -n "$SESSION_ID" ]; then
@@ -203,6 +219,7 @@ EOF
         fi
 
         start_ha
+        start_esphome
 
       else
         if [ "$WAS_LEADER" = "true" ]; then
@@ -212,6 +229,7 @@ EOF
           register_service "standby"
         fi
 
+        stop_esphome
         stop_ha
 
         # Sync from leader -- sync .storage/ but skip volatile files
@@ -233,7 +251,14 @@ EOF
                 --exclude '.storage/core.restore_state' \
                 --exclude '.storage/repairs.issue_registry' \
                 rsync://$LEADER_IP/hass-ha/ $DATA_DIR/ \
-                || echo "Warning: rsync from $LEADER_IP failed"
+                && date +%s > /run/last-hass-sync \
+                || echo "Warning: rsync hass-ha from $LEADER_IP failed"
+
+              echo "Syncing ESPhome configuration from leader ($LEADER_IP)..."
+              ${pkgs.rsync}/bin/rsync -a --delete \
+                rsync://$LEADER_IP/esphome/ /mnt/esphome/ \
+                && date +%s > /run/last-esphome-sync \
+                || echo "Warning: rsync esphome from $LEADER_IP failed"
             fi
           else
             echo "Warning: could not resolve leader node from session $LEADER_SESSION"
@@ -246,9 +271,10 @@ EOF
   '';
 in
 {
-  # Ensure the data directory is created and owned by the Home Assistant user
+  # Ensure the data directories are created with correct ownership
   systemd.tmpfiles.rules = [
-    "d /mnt/hass-ha 0775 hass hass - -"
+    "d /mnt/hass-ha  0775 hass hass - -"
+    "d /mnt/esphome  0775 root root - -"
   ];
 
   # Install Home Assistant Native Service
@@ -284,6 +310,28 @@ in
   systemd.services.home-assistant.restartIfChanged = false;
   systemd.services.home-assistant.stopIfChanged = false;
   systemd.services.home-assistant.unitConfig.ConditionPathExists = "/run/ha-cluster-leader";
+
+  # ESPhome – enabled but NOT started on boot; ha-cluster-manager controls
+  # its lifecycle via start_esphome/stop_esphome, same as Home Assistant.
+  services.esphome = {
+    enable = true;
+    port   = 6052;
+    # openFirewall = false; we manage firewall rules explicitly below
+  };
+  # services.esphome has no configDir option – redirect its state dir to
+  # /mnt/esphome via a bind-mount so device YAMLs live on the local SSD
+  # (same pattern as /mnt/hass-ha for Home Assistant).
+  systemd.services.esphome = {
+    wantedBy         = lib.mkForce [];
+    restartIfChanged = false;
+    stopIfChanged    = false;
+    unitConfig.ConditionPathExists = "/run/ha-cluster-leader";
+    serviceConfig = {
+      # Bind /mnt/esphome over the module's default /var/lib/esphome so
+      # ESPhome transparently reads/writes from our persistent location.
+      BindPaths = [ "/mnt/esphome:/var/lib/esphome" ];
+    };
+  };
 
   environment.systemPackages = [
     haClusterManager
@@ -322,9 +370,15 @@ in
           "read only" = true;
           "hosts allow" = "192.168.4.0/24 127.0.0.1";
         };
+        esphome = {
+          path = "/mnt/esphome";
+          "read only" = true;
+          "hosts allow" = "192.168.4.0/24 127.0.0.1";
+        };
       };
     };
   };
 
-  networking.firewall.allowedTCPPorts = [ 8124 873 ];
+  networking.firewall.allowedTCPPorts = [ 8124 873 6052 ];
+  networking.firewall.allowedUDPPorts = [ 5353 ]; # mDNS for ESPhome discovery
 }
