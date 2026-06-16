@@ -326,6 +326,11 @@ in
     restartIfChanged = false;
     stopIfChanged    = false;
     unitConfig.ConditionPathExists = "/run/ha-cluster-leader";
+    # Ensure /mnt/esphome exists before systemd sets up the BindPaths
+    # mount namespace — BindPaths fails at namespace setup time (before
+    # any ExecStart*) if the source directory is missing.
+    wants  = [ "systemd-tmpfiles-setup.service" ];
+    after  = [ "systemd-tmpfiles-setup.service" ];
     serviceConfig = {
       # Bind /mnt/esphome over the module's default /var/lib/esphome so
       # ESPhome transparently reads/writes from our persistent location.
