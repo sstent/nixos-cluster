@@ -12,8 +12,8 @@
   boot.loader.grub.enable = false;
   boot.loader.kboot-conf.enable = true;
   boot.loader.kboot-conf.debug = true;
-  # Use kernel >6.6
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # Use kernel >6.6 (Pinning to 6.6 as newer kernels have a reboot regression on RK3568)
+  boot.kernelPackages = pkgs.linuxPackages_6_6;
   # Stop ZFS breasking the build
   boot.supportedFilesystems = lib.mkForce ["btrfs" "cifs" "f2fs" "jfs" "ntfs" "reiserfs" "vfat" "xfs"];
 
