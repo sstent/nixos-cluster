@@ -177,7 +177,7 @@ in {
       set -e
       MOUNTED=0
       if ! ${pkgs.util-linux}/bin/mountpoint -q /boot; then
-        ${pkgs.util-linux}/bin/mount /boot
+        ${pkgs.util-linux}/bin/mount -t vfat /dev/disk/by-label/FIRMWARE /boot
         MOUNTED=1
       fi
       ${activeBuilder} ${args} -d /boot/kboot.conf -c "$1"
