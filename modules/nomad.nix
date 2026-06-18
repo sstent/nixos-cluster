@@ -72,6 +72,10 @@
     "d /mnt/configs/postgres 0770 999 999 -"
   ];
 
+  boot.kernelModules = [ "iptable_nat" "xt_MASQUERADE" "iptable_filter" ];
+  
+
+
   services.nomad = {
     package = pkgs.nomad_1_10;
     dropPrivileges = false;

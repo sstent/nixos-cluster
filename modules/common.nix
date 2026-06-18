@@ -11,6 +11,7 @@
     ./nomad.nix
     ./consul.nix
     ./coredns.nix
+    ./wireguard.nix
     inputs.sops-nix.nixosModules.sops
   ];
 
