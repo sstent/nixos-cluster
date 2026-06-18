@@ -168,22 +168,12 @@ in {
     # Choose between debug and normal builder
     activeBuilder = if cfg.debug then (mkDebugBuilder args) else builder;
 
-    # Wrapper that ensures /boot is mounted before the builder writes
-    # kboot.conf, then unmounts it again. This is necessary because the
-    # FIRMWARE vfat partition may not be mounted at switch time even when
-    # fileSystems."/boot" is declared with nofail.
+# Wrapper that executes the builder to write kboot.conf directly to
+    # the root partition so Petitboot can resolve the /nix/store paths.
     installScript = pkgs.writeScript "kboot-install" ''
       #!${pkgs.bash}/bin/bash
       set -e
-      MOUNTED=0
-      if ! ${pkgs.util-linux}/bin/mountpoint -q /boot; then
-        ${pkgs.util-linux}/bin/mount -t vfat /dev/disk/by-label/FIRMWARE /boot
-        MOUNTED=1
-      fi
-      ${activeBuilder} ${args} -d /boot/kboot.conf -c "$1"
-      if [ $MOUNTED -eq 1 ]; then
-        ${pkgs.util-linux}/bin/umount /boot
-      fi
+      ${activeBuilder} ${args} -d /kboot.conf -c "$1"
     '';
 
   in mkIf cfg.enable {

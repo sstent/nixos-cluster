@@ -38,6 +38,7 @@
   config = {
     system.stateVersion = "23.11"; # Did you read the comment?
     nixpkgs.config.allowUnfree = true;
+
     sops = {
       defaultSopsFile = "${config._secretstore}/host-secrets.yaml";
       age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
@@ -66,6 +67,9 @@
      "net.ipv6.conf.all.disable_ipv6" = 1;
      "net.ipv6.conf.default.disable_ipv6" = 1;
     };
+
+systemd.settings.Manager.DefaultTimeoutStopSec = "10s";
+
 
     services.openssh = {
       enable = true;

@@ -10,5 +10,5 @@ deploy-dry NODE BUILD_HOST=NODE:
 deploy-all: 
     just deploy opti1
     just deploy odroid6
-    just deploy odroid7 odroid6
-    just deploy odroid8 odroid6
+    just deploy odroid7
+    just deploy odroid8
