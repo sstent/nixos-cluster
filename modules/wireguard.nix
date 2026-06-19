@@ -18,11 +18,13 @@
     };
   };
 
-  systemd.paths.wireguard-sync = {
-    description = "Watch for WireGuard config changes";
-    wantedBy = [ "multi-user.target" ];
-    pathConfig = {
-      PathModified = "/mnt/Public/config/wireguard/wg0.conf";
+  systemd.timers.wireguard-sync = {
+    description = "Poll for WireGuard config changes every minute";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "1m";
+      OnUnitActiveSec = "1m";
+      Unit = "wireguard-sync.service";
     };
   };
 
