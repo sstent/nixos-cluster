@@ -9,6 +9,7 @@ keys:
   - &ODROID7 age1m970pg0gycn8ku8qr0es38zqzvtc2zrqqdrp3ammc9dhu392fc0sfqw7hm
   - &ODROID8 age1m3zny0wn4smrwhjrvw8qay8438l06v49h0fg4s3c6mpjyuq28vwsp5wvdk
   - &OPTI1 age126zq3zvun9jduamelslfwcuynlugz8njq54rxugzt3twu3gp9phswe55re
+  - &RPI3 age1qt73xw4hldgwp6sdm6ccdx4qvmjlfgylx53ap5lkey4mfefrsans87wyqr
 creation_rules:
   - path_regex: host-secrets.yaml$
     key_groups:
@@ -22,6 +23,7 @@ creation_rules:
       - *ODROID7
       - *ODROID8
       - *OPTI1
+      - *RPI3
   - path_regex: secrets/.*$
     key_groups:
     - age:
@@ -34,3 +36,4 @@ creation_rules:
       - *ODROID7
       - *ODROID8
       - *OPTI1
+      - *RPI3
