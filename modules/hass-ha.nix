@@ -13,12 +13,13 @@
   # ---------------------------------------------------------
   services.home-assistant = {
     enable = true;
+    package = pkgs.unstable.home-assistant;
     configDir = "/mnt/hass-ha";
     config = null;
     extraPackages = python3Packages: with python3Packages; [
       psycopg2 aiohomekit pychromecast androidtvremote2 pyipp python-kasa
       radios gtts python-otbr-api thinqconnect reolink-aio broadlink
-      zwave-js-server-python
+      zwave-js-server-python adb-shell androidtv
     ];
   };
 

@@ -30,6 +30,8 @@
 
   systemd.services.wireguard-sync = {
     description = "Sync WireGuard peers dynamically";
+    after = [ "wireguard-wg0.service" ];
+    bindsTo = [ "wireguard-wg0.service" ];
     path = with pkgs; [ nftables iproute2 iptables bash ];
     serviceConfig = {
       Type = "oneshot";

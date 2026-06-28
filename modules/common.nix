@@ -39,6 +39,14 @@
   config = {
     system.stateVersion = "23.11"; # Did you read the comment?
     nixpkgs.config.allowUnfree = true;
+    nixpkgs.overlays = [
+      (final: prev: {
+        unstable = import inputs.nixpkgs-unstable {
+          system = prev.system;
+          config.allowUnfree = true;
+        };
+      })
+    ];
 
     sops = {
       defaultSopsFile = "${config._secretstore}/host-secrets.yaml";
