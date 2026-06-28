@@ -76,6 +76,19 @@
         modules = [
           "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
           ({ pkgs, ... }: {
+            boot.kernelParams = [ "nomodeset" ];
+            
+            networking = {
+              defaultGateway = "192.168.4.1";
+              nameservers = [ "192.168.4.1" "1.1.1.1" ];
+              localCommands = ''
+                for IFACE in $(ls /sys/class/net | grep -E '^en|^eth'); do
+                  ip addr add 192.168.5.10/22 dev "$IFACE" || true
+                  ip link set dev "$IFACE" up || true
+                done
+              '';
+            };
+
             users.users.root.openssh.authorizedKeys.keys = [
               "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIfbw6iQZOe3SSRY2dysVZhWb3wHrZRXHMLscUfh4tfM sstent@nixos"
             ];
