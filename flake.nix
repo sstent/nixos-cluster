@@ -93,6 +93,7 @@
               "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIfbw6iQZOe3SSRY2dysVZhWb3wHrZRXHMLscUfh4tfM sstent@nixos"
             ];
             environment.systemPackages = with pkgs; [ git just sops ];
+            boot.kernelParams = [ "nomodeset" ];
           })
         ];
       };
