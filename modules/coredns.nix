@@ -86,12 +86,9 @@
     
     # Add static entries for critical services (always accessible even during flapping)
     # These ensure you can always reach Nomad/Consul UIs
-    cat >> "$TEMP_FILE" << 'EOF'
-# Static critical services - always available
-192.168.4.250 consul.fbleagh.duckdns.org
-192.168.4.250 nomad.fbleagh.duckdns.org
-EOF
-    
+    echo "# Static critical services - always available" >> "$TEMP_FILE"
+    echo "192.168.4.250 consul.fbleagh.duckdns.org" >> "$TEMP_FILE"
+    echo "192.168.4.250 nomad.fbleagh.duckdns.org" >> "$TEMP_FILE"
     # Only update if there were actual changes
     if ! cmp -s "$TEMP_FILE" "$HOSTS_FILE" 2>/dev/null; then
       cp "$TEMP_FILE" "$HOSTS_FILE"
