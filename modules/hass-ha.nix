@@ -5,8 +5,6 @@
   # Ensure the data directories are created with correct ownership
   systemd.tmpfiles.rules = [
     "d /mnt/hass-ha  0775 hass hass - -"
-    "d /mnt/esphome  0775 esphome esphome - -"
-    "d /var/lib/esphome 0755 esphome esphome - -"
   ];
 
   # ---------------------------------------------------------
@@ -30,45 +28,6 @@
   systemd.services.home-assistant.stopIfChanged = false;
   systemd.services.home-assistant.unitConfig.ConditionPathExists = "/run/ha-cluster-leader";
 
-  services.esphome = {
-    enable = true;
-    address = "0.0.0.0";
-    port   = 6053;
-  };
-
-users.users.esphome = {
-  isSystemUser = true;
-  group = "esphome";
-  uid = 993;  # pin to consistent value across all hosts
-};
-users.groups.esphome = {
-  gid = 991;  # pin to consistent value across all hosts
-};
-
-  systemd.services.esphome = {
-    wantedBy         = lib.mkForce [];
-    restartIfChanged = false;
-    stopIfChanged    = false;
-    unitConfig.ConditionPathExists = "/run/ha-cluster-leader";
-    wants  = [ "systemd-tmpfiles-setup.service" ];
-    after  = [ "systemd-tmpfiles-setup.service" ];
-
-  environment.PYTHONPATH = "${pkgs.esphome}/lib/python3.13/site-packages:${pkgs.python3Packages.makePythonPath pkgs.esphome.dependencies}";
-  environment.PLATFORMIO_CORE_DIR = lib.mkForce "/mnt/esphome/.platformio";
-
-  serviceConfig = {
-    ExecStart        = lib.mkForce "${pkgs.esphome}/bin/esphome dashboard --address 0.0.0.0 --port 6053 /mnt/esphome";
-    WorkingDirectory = lib.mkForce "/mnt/esphome";
-    StateDirectory   = lib.mkForce "";
-    DynamicUser      = lib.mkForce false;
-    User             = lib.mkForce "esphome";
-    Group            = lib.mkForce "esphome";
-    ReadWritePaths   = [ "/mnt/esphome" ];
-  };
-
-
-  };
-
   # ---------------------------------------------------------
   # RSYNC SYNC LOGIC (Pulls from VIP)
   # ---------------------------------------------------------
@@ -85,9 +44,6 @@ users.groups.esphome = {
         --exclude '.storage/core.restore_state' \
         --exclude '.storage/repairs.issue_registry' \
         rsync://192.168.4.250/hass-ha/ /mnt/hass-ha/ && date +%s > /run/last-hass-sync
-
-      # Sync ESPHome
-      rsync -a --delete rsync://192.168.4.250/esphome/ /mnt/esphome/
     '';
     serviceConfig.Type = "oneshot";
   };
@@ -118,11 +74,6 @@ users.groups.esphome = {
       sections = {
         hass-ha = {
           path = "/mnt/hass-ha";
-          "read only" = true;
-          "hosts allow" = "192.168.4.0/24 127.0.0.1";
-        };
-        esphome = {
-          path = "/mnt/esphome";
           "read only" = true;
           "hosts allow" = "192.168.4.0/24 127.0.0.1";
         };
