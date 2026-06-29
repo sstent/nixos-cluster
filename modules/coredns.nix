@@ -181,7 +181,7 @@ in {
   # Create writable directory for dynamic hosts file
   systemd.tmpfiles.rules = [
     "d /var/lib/coredns 0755 root root -"
-    "f /var/lib/coredns/consul-hosts 0644 root root - # Placeholder\n192.168.4.250 consul.fbleagh.duckdns.org\n192.168.4.250 nomad.fbleagh.duckdns.org"
+    "f /var/lib/coredns/consul-hosts 0644 root root - -"
   ];
 
   # Systemd service for Consul watch with rate limiting

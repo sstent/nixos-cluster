@@ -6,6 +6,7 @@
   systemd.tmpfiles.rules = [
     "d /mnt/hass-ha  0775 hass hass - -"
     "d /mnt/esphome  0775 esphome esphome - -"
+    "d /var/lib/esphome 0755 esphome esphome - -"
   ];
 
   # ---------------------------------------------------------
