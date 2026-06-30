@@ -118,6 +118,17 @@
           ./hosts/rpi3
         ];
       };
+      sd-odroid-hc2 = nixpkgs.lib.nixosSystem {
+        system = "armv7l-linux";
+        specialArgs = {inherit inputs;};
+        modules = [
+          "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
+          {
+            system.configurationRevision = self.rev or self.dirtyRev or null;
+          }
+          ./hosts/odroid-hc2-base
+        ];
+      };
     };
   };
 }

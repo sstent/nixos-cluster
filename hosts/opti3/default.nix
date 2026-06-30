@@ -30,4 +30,7 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  
+  # Enable ARMv7 emulation for building Odroid HC2 images
+  boot.binfmt.emulatedSystems = [ "armv7l-linux" ];
 }
