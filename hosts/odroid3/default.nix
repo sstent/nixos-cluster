@@ -1,7 +1,7 @@
 { lib, pkgs, config, inputs, ... }: {
   imports = [
     ../odroid-hc2-base
-    ../../modules/base.nix
+    ../../modules/minimal-base.nix
   ];
 
   networking.hostName = lib.mkForce "odroid3";
