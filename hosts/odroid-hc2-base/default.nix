@@ -13,9 +13,6 @@
     
     nixpkgs.overlays = [
       (final: prev: {
-        efivar = prev.runCommand "efivar-dummy" {} "mkdir -p $out";
-        efibootmgr = prev.runCommand "efibootmgr-dummy" {} "mkdir -p $out";
-        
         # Patch U-Boot to use higher FDT address, avoiding kernel overlap
         ubootOdroidXU3 = prev.ubootOdroidXU3.overrideAttrs (old: {
           extraConfig = (old.extraConfig or "") + ''
