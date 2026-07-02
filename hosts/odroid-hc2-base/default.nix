@@ -11,7 +11,16 @@
 
   config = {
     system.stateVersion = "23.11";
+    nixpkgs.buildPlatform.system = "x86_64-linux";
     nixpkgs.hostPlatform.system = "armv7l-linux";
+    nixpkgs.config.allowBroken = true;
+    
+    nixpkgs.overlays = [
+      (final: prev: {
+        efivar = prev.runCommand "efivar-dummy" {} "mkdir -p $out";
+        efibootmgr = prev.runCommand "efibootmgr-dummy" {} "mkdir -p $out";
+      })
+    ];
 
     networking.hostName = "odroid-hc2";
 

@@ -93,7 +93,6 @@
               "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIfbw6iQZOe3SSRY2dysVZhWb3wHrZRXHMLscUfh4tfM sstent@nixos"
             ];
             environment.systemPackages = with pkgs; [ git just sops ];
-            boot.kernelParams = [ "nomodeset" ];
           })
         ];
       };
@@ -119,7 +118,7 @@
         ];
       };
       sd-odroid-hc2 = nixpkgs.lib.nixosSystem {
-        system = "armv7l-linux";
+        system = "x86_64-linux";
         specialArgs = {inherit inputs;};
         modules = [
           "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
