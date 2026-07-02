@@ -141,7 +141,7 @@
         ];
       };
       sd-odroid3 = inputs.nixpkgs-2311.lib.nixosSystem {
-        system = "armv7l-linux";
+        system = "x86_64-linux";
         specialArgs = {inherit inputs;};
         modules = [
           "${inputs.nixpkgs-2311}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
