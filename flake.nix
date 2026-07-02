@@ -130,7 +130,7 @@
         ];
       };
       odroid3 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+        system = "armv7l-linux";
         specialArgs = {inherit inputs;};
         modules = [
           {
