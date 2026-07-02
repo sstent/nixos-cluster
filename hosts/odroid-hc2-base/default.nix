@@ -5,9 +5,6 @@
   inputs,
   ...
 }: {
-  imports = [
-    ../../modules/common.nix
-  ];
 
   config = {
     system.stateVersion = "23.11";
@@ -19,6 +16,13 @@
       (final: prev: {
         efivar = prev.runCommand "efivar-dummy" {} "mkdir -p $out";
         efibootmgr = prev.runCommand "efibootmgr-dummy" {} "mkdir -p $out";
+        
+        # Patch U-Boot to use higher FDT address, avoiding kernel overlap
+        ubootOdroidXU3 = prev.ubootOdroidXU3.overrideAttrs (old: {
+          extraConfig = (old.extraConfig or "") + ''
+            CONFIG_EXTRA_ENV_SETTINGS="fdt_addr_r=0x45000000\0ramdisk_addr_r=0x47000000\0"
+          '';
+        });
       })
     ];
 

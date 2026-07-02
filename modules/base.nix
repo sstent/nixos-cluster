@@ -1,0 +1,78 @@
+{
+  lib,
+  pkgs,
+  config,
+  inputs,
+  ...
+}: {
+  imports = [
+    inputs.sops-nix.nixosModules.sops
+  ];
+
+  ##secretstore path variable
+  options._secretstore = lib.mkOption {
+    type = lib.types.str;
+    default = "${inputs.self}/secrets";
+    description = "Path to the Secrets storage";
+  };
+
+  options.custom._Networkinterface = lib.mkOption {
+    type = lib.types.str;
+    default = "end0";
+    description = "Network interface name to bind to.";
+    example = "enp3s0";
+  };
+
+  options.custom.VIP_Priority = lib.mkOption {
+    type = lib.types.int;
+    default = 50;
+    description = "Keep alived prority for voting";
+  };
+
+  config = {
+    system.stateVersion = "23.11"; # Did you read the comment?
+    nixpkgs.config.allowUnfree = true;
+    nixpkgs.overlays = [
+      (final: prev: {
+        unstable = import inputs.nixpkgs-unstable {
+          system = prev.system;
+          config.allowUnfree = true;
+        };
+      })
+    ];
+
+    sops = {
+      defaultSopsFile = "${config._secretstore}/host-secrets.yaml";
+      age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
+    };
+
+    # Enable nix flakes
+    nix.package = pkgs.nixVersions.stable;
+    nix.extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
+    nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
+
+    environment.systemPackages = [
+      pkgs.git
+      (if pkgs.stdenv.hostPlatform.system == "armv7l-linux" then pkgs.ncdu_1 else pkgs.ncdu)
+      pkgs.killall
+      pkgs.dig
+      pkgs.jq
+    ];
+
+    boot.kernel.sysctl = {
+     "net.ipv6.conf.all.disable_ipv6" = 1;
+     "net.ipv6.conf.default.disable_ipv6" = 1;
+    };
+
+    systemd.settings.Manager.DefaultTimeoutStopSec = "10s";
+
+    services.openssh = {
+      enable = true;
+      settings.PermitRootLogin = "yes";
+    };
+    users.extraUsers.root.initialPassword = lib.mkForce "odroid";
+    users.users."root".openssh.authorizedKeys.keys = ["ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAwn26AL26A0Yt4sE+rm5//p8QKuNGI/ezAdNJX9QAjRErjEWnsiUr+w0O78912A2RCakdZYZJo6p1RuLYq6u27mjdLU1hhJs1t/ZFUjevKP33Q8hjptnV3s/G/iPfl0h4kQDStNySgJJ7cGh8Dhj906BrQbns3U2WgVZWwhaYvFiSjZA9UWwvB+n/jN9YeSShfdqGYw8/WlFZiOZrz4poO6/DUOAiztvzrpaQFDtI2f9TdGL1ttvYk04jDCRO1cM1LjgWir+WToalgyAqxfgnlvbv8g16RQo//8qhRdMqQPJKnIRewy/VLN1VbNbO2+z5f6BYbYlfioDXmuzMb86jfQ== id_rsa"];
+  };
+}

@@ -28,13 +28,18 @@ echo "Flashing to $DEVICE..."
 # Flash the image
 zstdcat "$IMAGE_PATH" | sudo dd of="$DEVICE" bs=4M status=progress
 sudo sync
+sleep 3
+sudo blockdev --flushbufs "$DEVICE" || true
+sudo blockdev --rereadpt "$DEVICE" || true
+sleep 2
 
 echo "Image flashed. Now installing Odroid HC2 (XU3) bootloader..."
 
 # Ensure we have sd_fuse-xu3 available
 if ! command -v sd_fuse-xu3 &> /dev/null; then
-    echo "sd_fuse-xu3 not found in PATH. Attempting to run via nix-shell..."
-    nix-shell -p odroid-xu3-bootloader --run "sudo sd_fuse-xu3 $DEVICE"
+    echo "sd_fuse-xu3 not found in PATH. Attempting to build via flake..."
+    BOOTLOADER_PATH=$(nix build .#nixosConfigurations.sd-odroid-hc2.pkgs.odroid-xu3-bootloader --no-link --print-out-paths --impure)
+    sudo "$BOOTLOADER_PATH/bin/sd_fuse-xu3" "$DEVICE"
 else
     sudo sd_fuse-xu3 "$DEVICE"
 fi

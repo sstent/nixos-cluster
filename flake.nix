@@ -122,10 +122,21 @@
         specialArgs = {inherit inputs;};
         modules = [
           "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
+          ./modules/common.nix
           {
             system.configurationRevision = self.rev or self.dirtyRev or null;
           }
           ./hosts/odroid-hc2-base
+        ];
+      };
+      odroid3 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = {inherit inputs;};
+        modules = [
+          {
+            system.configurationRevision = self.rev or self.dirtyRev or null;
+          }
+          ./hosts/odroid3
         ];
       };
     };
