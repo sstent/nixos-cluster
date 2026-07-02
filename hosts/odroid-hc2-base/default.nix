@@ -8,7 +8,6 @@
 
   config = {
     system.stateVersion = "23.11";
-    nixpkgs.buildPlatform.system = "x86_64-linux";
     nixpkgs.hostPlatform.system = "armv7l-linux";
     nixpkgs.config.allowBroken = true;
     

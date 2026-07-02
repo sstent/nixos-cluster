@@ -6,5 +6,4 @@
   ];
 
   networking.hostName = lib.mkForce "odroid3";
-  nixpkgs.buildPlatform.system = lib.mkForce "armv7l-linux";
 }
