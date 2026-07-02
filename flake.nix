@@ -130,7 +130,7 @@
           ./hosts/odroid-hc2-base
         ];
       };
-      odroid3 = nixpkgs.lib.nixosSystem {
+      odroid3 = inputs.nixpkgs-2405.lib.nixosSystem {
         system = "armv7l-linux";
         specialArgs = {inherit inputs;};
         modules = [
