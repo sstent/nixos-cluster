@@ -4,5 +4,5 @@
     ../../modules/base.nix
   ];
 
-  networking.hostName = "odroid3";
+  networking.hostName = lib.mkForce "odroid3";
 }
