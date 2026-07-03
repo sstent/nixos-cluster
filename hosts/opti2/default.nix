@@ -15,6 +15,7 @@
   networking.hostName = "opti2";
   custom._Networkinterface = "enp0s31f6";
   custom.VIP_Priority = 60;
+  networking.useDHCP = false;
   networking.interfaces.enp0s31f6.ipv4.addresses = [
     {
       address = "192.168.4.37";
