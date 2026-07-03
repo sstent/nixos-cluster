@@ -50,7 +50,7 @@
      "net.ipv6.conf.default.disable_ipv6" = 1;
     };
 
-    systemd.settings.Manager.DefaultTimeoutStopSec = "10s";
+    systemd.extraConfig = "DefaultTimeoutStopSec=10s";
 
     services.openssh = {
       enable = true;
