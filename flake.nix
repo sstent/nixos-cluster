@@ -130,7 +130,7 @@
           ./hosts/odroid-hc2-base
         ];
       };
-      odroid3 = inputs.nixpkgs-2311.lib.nixosSystem {
+      odroid3 = nixpkgs.lib.nixosSystem {
         system = "armv7l-linux";
         specialArgs = {inherit inputs;};
         modules = [
@@ -140,11 +140,11 @@
           ./hosts/odroid3
         ];
       };
-      sd-odroid3 = inputs.nixpkgs-2311.lib.nixosSystem {
+      sd-odroid3 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = {inherit inputs;};
         modules = [
-          "${inputs.nixpkgs-2311}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
+          "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
           {
             system.configurationRevision = self.rev or self.dirtyRev or null;
           }
