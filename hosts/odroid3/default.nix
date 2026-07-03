@@ -1,9 +1,17 @@
 { lib, pkgs, config, inputs, ... }: {
-  imports = [
-    ../odroid-hc2-base
-  ];
+  # NOTE: Do NOT import odroid-hc2-base here — it overrides nixpkgs.hostPlatform
+  # which breaks the x86_64 cross-compilation in the sd-odroid3 image build.
+  # Hardware settings are inlined below instead.
 
   networking.hostName = lib.mkForce "odroid3";
+  networking.useDHCP = true;
+  boot.kernelParams = [ "net.ifnames=0" ];
+
+  # Exynos 5422 device tree
+  hardware.deviceTree.name = "exynos5422-odroidhc1.dtb";
+
+  # Disable unsupported filesystems on armv7l
+  boot.supportedFilesystems = lib.mkForce [ "ext4" "vfat" "btrfs" ];
 
   fileSystems."/" = {
     device = "/dev/disk/by-label/NIXOS_SD";
@@ -12,7 +20,7 @@
 
   boot.loader.generic-extlinux-compatible.enable = true;
 
-  # Minimal runtime configuration — no cluster stack
+  # Minimal runtime — no cluster stack
   services.openssh = {
     enable = true;
     settings.PermitRootLogin = "yes";
