@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-2311.url = "github:NixOS/nixpkgs/nixos-23.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     sops-nix.url = github:Mic92/sops-nix;
   };
@@ -130,8 +129,8 @@
           ./hosts/odroid-hc2-base
         ];
       };
-      odroid3 = inputs.nixpkgs-2311.lib.nixosSystem {
-        system = "armv7l-linux";
+      odroid3 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs;};
         modules = [
           {
@@ -140,11 +139,11 @@
           ./hosts/odroid3
         ];
       };
-      sd-odroid3 = inputs.nixpkgs-2311.lib.nixosSystem {
-        system = "armv7l-linux";
+      sd-odroid3 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs;};
         modules = [
-          "${inputs.nixpkgs-2311}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
+          "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
           {
             system.configurationRevision = self.rev or self.dirtyRev or null;
           }
