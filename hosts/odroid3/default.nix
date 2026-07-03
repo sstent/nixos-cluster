@@ -15,6 +15,7 @@
   };
 
   boot.loader.generic-extlinux-compatible.enable = true;
+  boot.loader.grub.enable = false;
 
   # Minimal runtime — no cluster stack, no sops, no wireguard
   services.openssh = {
