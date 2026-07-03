@@ -33,4 +33,6 @@
   
   # Enable ARMv7 emulation for building Odroid HC2 images
   boot.binfmt.emulatedSystems = [ "armv7l-linux" ];
+
+  nix.settings.system-features = [ "benchmark" "big-parallel" "kvm" "nixos-test" "gccarch-armv7-a" ];
 }
