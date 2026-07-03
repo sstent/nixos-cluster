@@ -135,7 +135,6 @@
         modules = [
           {
             system.configurationRevision = self.rev or self.dirtyRev or null;
-            nixpkgs.crossSystem = nixpkgs.lib.systems.examples.armv7l-hf-multiplatform;
           }
           ./hosts/odroid3
         ];
