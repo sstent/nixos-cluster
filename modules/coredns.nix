@@ -69,7 +69,7 @@
       .tags[] |
       select(startswith("traefik.http.routers.") and contains(".rule=Host")) |
       . as $tag |
-      ($tag | capture("Host\\((?<hosts>[^)]+)\\)") | .hosts | gsub("[`\"\\s]"; "") | split(",")[]) as $host |
+      ($tag | capture("Host\\((?<hosts>[^)]+)\\)") | .hosts | gsub("[\"\\s]"; "") | split(",")[]) as $host |
       {
         host: $host,
         address: input.address

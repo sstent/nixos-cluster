@@ -1,0 +1,4 @@
+# Ensure Nix and shell scripts always use LF (Unix) line endings
+*.nix text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf

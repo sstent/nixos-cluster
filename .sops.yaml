@@ -28,6 +28,7 @@ creation_rules:
       - *OPTI1
       - *RPI3
       - *OPTI3
+      - *OPTI2
   - path_regex: secrets/.*$
     key_groups:
     - age:
@@ -43,3 +44,4 @@ creation_rules:
       - *OPTI1
       - *RPI3
       - *OPTI3
+      - *OPTI2

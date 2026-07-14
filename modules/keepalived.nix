@@ -39,10 +39,33 @@ with lib; let
       ${pkgs.systemd}/bin/systemctl stop hass-sync.timer hass-sync.service
       touch /run/ha-cluster-leader
       ${pkgs.systemd}/bin/systemctl start home-assistant esphome
+      
+      # Register hass-nix with Consul
+      ${pkgs.curl}/bin/curl -s -X PUT http://127.0.0.1:8500/v1/agent/service/register -d '{
+        "id": "hass-nix",
+        "name": "hass-nix",
+        "port": 8123,
+        "tags": [
+          "homeassistant",
+          "global",
+          "sslcert",
+          "traefik.http.routers.hass.rule=Host(`hass-nix.service.dc1.fbleagh.duckdns.org`)",
+          "traefik.http.routers.hass.entrypoints=websecure",
+          "traefik.http.routers.hass.tls=true"
+        ],
+        "checks": [{
+          "tcp": "127.0.0.1:8123",
+          "interval": "10s",
+          "timeout": "2s"
+        }]
+      }' || true
     else
       rm -f /run/ha-cluster-leader
       ${pkgs.systemd}/bin/systemctl stop home-assistant esphome
       ${pkgs.systemd}/bin/systemctl start hass-sync.timer
+      
+      # Deregister hass-nix from Consul
+      ${pkgs.curl}/bin/curl -s -X PUT http://127.0.0.1:8500/v1/agent/service/deregister/hass-nix || true
     fi
   '';
 

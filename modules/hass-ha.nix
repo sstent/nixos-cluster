@@ -81,31 +81,7 @@
     };
   };
 
-  services.consul = {
-    enable = true;
-    extraConfig = {
-      services = [
-        {
-          id = "hass-nix";
-          name = "hass-nix";
-          port = 8123; 
-        tags = [
-          "homeassistant"
-          "global"
-          "sslcert"
-          "traefik.http.routers.hass.rule=Host(`hass-nix.service.dc1.fbleagh.duckdns.org`)"
-          "traefik.http.routers.hass.entrypoints=websecure"
-          "traefik.http.routers.hass.tls=true"
-        ];
-          checks = [{
-            tcp = "127.0.0.1:8123";
-            interval = "10s";
-            timeout = "2s";
-          }];
-        }
-      ];
-    };
-  };
+
 
   networking.firewall.allowedTCPPorts = [ 8123 873 6052 6053];
   networking.firewall.allowedUDPPorts = [ 5353 ];
