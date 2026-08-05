@@ -11,11 +11,13 @@ keys:
   - &OPTI1 age126zq3zvun9jduamelslfwcuynlugz8njq54rxugzt3twu3gp9phswe55re
   - &RPI3 age1qt73xw4hldgwp6sdm6ccdx4qvmjlfgylx53ap5lkey4mfefrsans87wyqr
   - &OPTI3 age1qnzp57a85h3meejkzpw4fesj7a0p3pg8u465pxj25xc6v83usylq9cxgam
+  - &OPTI2 age1gnq5jxrs6n79ce7jvzu9hjm7wvz9yu3vrerkdwyqm05mp7kcx4ksm38emc
 creation_rules:
   - path_regex: host-secrets.yaml$
     key_groups:
     - age:
       - *adminkey
+      - *OPTI2
       - *StuPC-WSL_UBUNTU_2204
       - *StuPC-WSL_NIXOS
       - *go3_WSL_NIXOS
@@ -30,6 +32,7 @@ creation_rules:
     key_groups:
     - age:
       - *adminkey
+      - *OPTI2
       - *STU_ID
       - *StuPC-WSL_NIXOS
       - *go3_WSL_NIXOS

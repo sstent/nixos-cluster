@@ -20,7 +20,12 @@
     };
 };
 
-
+  sops.secrets.gitea_docker_auth = {
+    path = "/root/.docker/config.json";
+    owner = "root";
+    group = "root";
+    mode = "0600";
+  };
 
   networking.firewall = {
     allowedTCPPorts = [
