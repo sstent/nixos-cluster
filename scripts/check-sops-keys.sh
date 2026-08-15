@@ -71,13 +71,18 @@ done
 echo "----------------------------------------"
 if [ "$UPDATED" = true ]; then
     echo "You have successfully updated .sops.yaml!"
-    read -p "❓ Do you want to run 'sops updatekeys $SECRETS_FILE' now to re-encrypt the secrets? (y/N) " -n 1 -r
+    read -p "❓ Do you want to re-encrypt all files in the secrets/ directory now? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        sops updatekeys "$SECRETS_FILE"
-        echo "✔️ Secrets updated!"
+        for secret_file in secrets/*; do
+            if [ -f "$secret_file" ]; then
+                echo "Updating keys for $secret_file..."
+                sops updatekeys "$secret_file" || echo "⚠️  Failed to update $secret_file (maybe not a SOPS file?)"
+            fi
+        done
+        echo "✔️ All secrets updated!"
     else
-        echo "Don't forget to run 'sops updatekeys $SECRETS_FILE' later!"
+        echo "Don't forget to run 'sops updatekeys' on your secret files later!"
     fi
 else
     echo "Finished checking all hosts. No updates were required."
