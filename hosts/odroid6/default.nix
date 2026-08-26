@@ -24,4 +24,12 @@
   ];
 
   networking.defaultGateway = "192.168.4.1";
-networking.nameservers = ["192.168.4.250" "192.168.4.1" "8.8.8.8"];}
+  networking.nameservers = ["192.168.4.250" "192.168.4.1" "8.8.8.8"];
+
+  # Prevent rotational disks from spinning down and disable APM / USB autosuspend
+  environment.systemPackages = with pkgs; [ hdparm sdparm ];
+  boot.kernelParams = [ "usbcore.autosuspend=-1" ];
+  services.udev.extraRules = ''
+    ACTION=="add|change", SUBSYSTEM=="block", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", RUN+="${pkgs.hdparm}/bin/hdparm -B 255 -S 0 /dev/%k"
+  '';
+}
