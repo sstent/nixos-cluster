@@ -56,7 +56,8 @@
     environment.systemPackages = [
       pkgs.git
       (if pkgs.stdenv.hostPlatform.system == "armv7l-linux" then pkgs.ncdu_1 else pkgs.ncdu)
-      pkgs.duc
+      pkgs.gdu
+      pkgs.dua
       pkgs.killall
       pkgs.dig
       pkgs.jq
