@@ -22,7 +22,7 @@ justfile        # Task runner (just)
 
 ## Architecture Reference
 - Cluster architecture and node topology: `AntiGrav/Projects/Cluster/index.md`
-- DNS and network: `AntiGrav/Projects/Cluster/dns-and-routing.md`
+- DNS and network: `docs/dns-and-routing.md` (and `AntiGrav/Projects/Cluster/dns-and-routing.md` in SilverBullet)
 - Full architecture notes: `AntiGrav/Architecture/nixos-cluster/` in SilverBullet.
 
 ## Key Commands
