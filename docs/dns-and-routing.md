@@ -20,7 +20,8 @@ This document is the authoritative reference for domain name allocation, DNS res
 | Domain Pattern | Primary Use Case | Target / Resolution | Accessibility | DNS Handler |
 | :--- | :--- | :--- | :--- | :--- |
 | **`*.service.dc1.consul`**<br>`*.node.dc1.consul` | Internal Nomad service discovery, RPC, inter-container traffic, HAProxy dynamic backends, Prometheus scrapers. | Service/Node IP + Dynamic Port | Cluster & LAN only | **Consul DNS** (`:8600`) |
-| **`*.service.dc1.fbleagh.duckdns.org`** | Direct internal service access requiring a valid public TLS cert and FQDN without WAN exposure (e.g. Gitea registry/git clones, Grafana, Home Assistant, Gatus). | Node/Service IP | Cluster & LAN only *(explicitly blocked on WAN edge)* | **CoreDNS :53 $\to$ Consul DNS :8600** (`alt_domain`) |
+| **`*-local.fbleagh.duckdns.org`** | Direct internal service access using single-level subdomains covered natively by public wildcard certificate `*.fbleagh.duckdns.org` without WAN exposure (e.g. `gitea-local`, `grafana-local`, `status-local`, `homepage-local`, `hass-local`). | Node/Service IP | Cluster & LAN only *(explicitly blocked on WAN edge via HAProxy)* | **CoreDNS :53 bidirectional rewrite** $\to$ Consul DNS (`<service>.service.dc1.consul`) |
+| **`*.service.dc1.fbleagh.duckdns.org`** | *(Legacy / Deprecated)* Legacy multi-level domain for internal services. Kept for transition backward compatibility. | Node/Service IP | Cluster & LAN only | **CoreDNS :53 $\to$ Consul DNS :8600** (`alt_domain`) |
 | **`consul.fbleagh.duckdns.org`**<br>`nomad.fbleagh.duckdns.org` | Cluster control-plane web dashboards (Consul UI on `:8500`, Nomad UI on `:4646`). Direct bypass avoiding reverse proxy layers. | `192.168.4.250` (Keepalived VIP) | Cluster & LAN only | **CoreDNS Static Hosts** (`/var/lib/coredns/consul-hosts`) |
 | **`*.fbleagh.duckdns.org`** | Public and user-facing apps (`notes.`, `vault.`, `immich.`, `abs.`, `m.`, `miniflux.`, `fittrack.`, `gotify.`, `mail.`). | WAN Public IP (`75.142.195.167`) | LAN (Hairpin) & WAN Internet | **DuckDNS Public DNS** $\to$ OpenWrt DNAT $\to$ HAProxy $\to$ Traefik |
 | **`*.fbleagh.dedyn.io`** | Secondary / backup dynamic DNS namespace (deSEC) for failover and dual-SAN wildcard certificates. | WAN Public IP | LAN & WAN Internet | **deSEC Public DNS** |
@@ -108,9 +109,18 @@ Runs on port 53 across all NixOS cluster nodes:
 - **`consul:53`**: Forwards all `.consul` queries to local Consul agent at `127.0.0.1:8600`.
 - **`fbleagh.duckdns.org:53`**:
   1. Checks `/var/lib/coredns/consul-hosts` (provides zero-proxy static resolution for `nomad.` and `consul.` to `192.168.4.250`).
-  2. Forwards `service.dc1.fbleagh.duckdns.org` directly to `127.0.0.1:8600` (Consul DNS).
-  3. Caches aggressively (300s TTL).
-  4. **Fallthrough**: Forwards other `*.fbleagh.duckdns.org` subdomains to upstream `8.8.8.8` / `1.1.1.1` to resolve the WAN IP.
+  2. **Bidirectional Rewrite for `*-local.fbleagh.duckdns.org`**:
+     Rewrites incoming queries for `(.*)-local.fbleagh.duckdns.org` to `{1}.service.dc1.consul` and forwards them to local Consul DNS at `127.0.0.1:8600`. Importantly, it also rewrites the **answer section** RR names back from `.service.dc1.consul` to `-local.fbleagh.duckdns.org` so standard `glibc`/POSIX stub resolvers accept the response:
+     ```coredns
+     rewrite {
+       name regex (.*)-local\.fbleagh\.duckdns\.org {1}.service.dc1.consul
+       answer name (.*)\.service\.dc1\.consul {1}-local.fbleagh.duckdns.org
+     }
+     forward consul 127.0.0.1:8600
+     ```
+  3. **Legacy Forward**: Forwards `service.dc1.fbleagh.duckdns.org` directly to `127.0.0.1:8600` (Consul DNS `alt_domain`).
+  4. Caches aggressively (300s TTL).
+  5. **Fallthrough**: Forwards other `*.fbleagh.duckdns.org` subdomains to upstream `8.8.8.8` / `1.1.1.1` to resolve the WAN IP.
 - **`.:53`**: Fallback forwarding to OpenWrt gateway `192.168.4.1` and Google DNS `8.8.8.8`.
 
 ### 4. HashiCorp Consul DNS (`:8600`)
@@ -137,9 +147,11 @@ Runs directly on the OpenWrt router (`/etc/haproxy.cfg`):
   ```haproxy
   acl is_internal src 192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 127.0.0.0/8
   acl is_service_domain hdr_end(host) -i .service.dc1.fbleagh.duckdns.org
+  acl is_local_domain hdr_reg(host) -i .*-local\.fbleagh\.duckdns\.org
   http-request deny if is_service_domain !is_internal
+  http-request deny if is_local_domain !is_internal
   ```
-  Any request arriving from outside the network targeting `*.service.dc1.fbleagh.duckdns.org` is rejected with HTTP 403.
+  Any request arriving from outside the network targeting `*-local.fbleagh.duckdns.org` or `*.service.dc1...` is rejected with HTTP 403.
 - **Backend Resolution via Consul**:
   HAProxy queries Consul DNS (`192.168.4.36:8600`, etc.) using SRV templates:
   `server-template <name> 4 _<name>._tcp.service.dc1.consul resolvers consul check`
@@ -150,10 +162,16 @@ Runs directly on the OpenWrt router (`/etc/haproxy.cfg`):
 
 ### 3. Application Ingress: Traefik (`nomad_jobs/enabled/traefik.nomad`)
 Runs as a Nomad system job across nodes, binding ports 80 and 443:
-- **Consul Catalog Provider**: Watches Consul for container allocations and dynamic tags (`traefik.http.routers.*`).
+- **Consul Catalog Provider & Automatic Ingress**:
+  Traefik automatically discovers all services registered in Consul. With the default routing rule:
+  ```yaml
+  defaultRule: "Host(`{{ .Name }}-local.fbleagh.duckdns.org`, `{{ .Name }}.service.dc1.consul`)"
+  ```
+  Every registered Nomad service automatically receives internal TLS termination matching `*.fbleagh.duckdns.org` without needing custom job tags.
 - **TLS Wildcards**: Pulls Let's Encrypt certificates directly from Consul KV:
   - `letsconsul/*.fbleagh.duckdns.org/fullchain.cer`
   - `letsconsul/*.fbleagh.dedyn.io/fullchain.cer`
+  Matches single-level `*-local.fbleagh.duckdns.org` subdomains natively per RFC 6125.
 - **Authentication**: Integrates with Dex / Forward-Auth (`fwdauth.fbleagh.duckdns.org`). External requests to sensitive apps are required to authenticate, while internal RFC1918 traffic can bypass auth via priority rules.
 
 ---
