@@ -123,7 +123,20 @@ in {
         fallthrough
       }
       
-      # Forward service.* queries to Consul with retries
+      # Rewrite *-local queries to native Consul service discovery and rewrite answer back
+      rewrite {
+        name regex (.*)-local\.fbleagh\.duckdns\.org {1}.service.dc1.consul
+        answer name (.*)\.service\.dc1\.consul {1}-local.fbleagh.duckdns.org
+      }
+      
+      # Forward .consul to local Consul port 8600
+      forward consul 127.0.0.1:8600 {
+        max_fails 3
+        expire 10s
+        health_check 5s
+      }
+      
+      # Forward service.* queries to Consul with retries (legacy transition)
       forward service.dc1.fbleagh.duckdns.org 127.0.0.1:8600 {
         max_fails 3
         expire 10s
