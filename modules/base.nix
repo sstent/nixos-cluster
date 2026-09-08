@@ -61,6 +61,8 @@
       pkgs.killall
       pkgs.dig
       pkgs.jq
+      pkgs.backrest
+      pkgs.restic
     ];
 
     boot.kernel.sysctl = {
