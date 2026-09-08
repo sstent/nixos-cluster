@@ -61,7 +61,7 @@
       pkgs.killall
       pkgs.dig
       pkgs.jq
-      pkgs.backrest
+      pkgs.resticprofile
       pkgs.restic
     ];
 

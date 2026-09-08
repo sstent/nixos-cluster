@@ -101,14 +101,14 @@ with lib; let
       log "  Nix store mount: $(df -h /nix/store | tail -1)"
       
       log "=== EXECUTING ORIGINAL BUILDER ==="
-      log "Command: ${builder} ${args} $*"
+      log "Command: ${builder} $*"
       
     } 2>&1 | tee -a "$log_file"
     
     # Execute the original builder and capture its output.
     # Use a temp file to capture exit code correctly — piping to tee
     # would mask the builder's exit code (tee always exits 0).
-    if /run/current-system/sw/bin/bash ${builder} ${args} "$@" > >(tee -a "$log_file") 2>&1; then
+    if ${pkgs.bash}/bin/bash ${builder} "$@" > >(tee -a "$log_file") 2>&1; then
       log "=== KBOOT DEBUG SUCCESS ==="
       echo "Debug log saved to: $log_file" >&2
     else

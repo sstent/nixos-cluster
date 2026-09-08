@@ -13,6 +13,7 @@
     ./consul.nix
     ./coredns.nix
     ./wireguard.nix
+    ./resticprofile.nix
   ];
 
   config = {
