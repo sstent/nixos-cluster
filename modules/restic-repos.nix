@@ -11,16 +11,17 @@
   # Only the repo mixins a host actually uses will be referenced, but having
   # the secrets available on all cluster nodes is harmless and simplifies the
   # module boundary.
-  sops.secrets."restic_password" = {};
+  sops.secrets."restic_password_pr2100" = {};
   sops.secrets."restic_password_odroid7" = {};
   sops.secrets."restic_password_hetzner" = {};
+  sops.secrets."restic_password_azure" = {};
   sops.secrets."restic_azure_env" = {};
 
   custom.resticprofile.repositories = {
     # Restserver running on the PR2100 NAS
     repo-pr2100 = {
       repository = "rest:http://192.168.4.109:8888";
-      password-file = config.sops.secrets."restic_password".path;
+      password-file = config.sops.secrets."restic_password_pr2100".path;
       retention = {
         keep-daily = 7;
         keep-weekly = 4;
@@ -44,6 +45,7 @@
     # Azure Blob Storage repository
     repo-azure = {
       repository = "azure:repo1:/";
+      password-file = config.sops.secrets."restic_password_azure".path;
       env-file = config.sops.secrets."restic_azure_env".path;
       retention = {
         keep-daily = 7;
