@@ -44,6 +44,18 @@
         exclude = [ "*.tmp" "*.lock" ];
       };
     };
+    photos-library = {
+      "inherit" = "repo-hetzner";
+      backup = {
+        source = [ "/mnt/EXTDrive1/Photos_Backup" ];
+        tag = [ "MasterPhotos" "odroid8" ];
+        exclude = [ "*.tmp" "*.lock" ];
+        schedule = "03:30";
+      };
+      retention = {
+        keep-last = 10;
+      };
+    };
   };
 
   custom.resticprofile.groups = {
@@ -52,6 +64,14 @@
       schedules = {
         backup = {
           at = "02:30";
+        };
+      };
+    };
+    photos-daily = {
+      profiles = [ "photos-library" ];
+      schedules = {
+        backup = {
+          at = "03:30";
         };
       };
     };
