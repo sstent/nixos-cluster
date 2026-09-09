@@ -33,4 +33,27 @@
   services.udev.extraRules = ''
     ACTION=="add|change", SUBSYSTEM=="block", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", RUN+="${pkgs.hdparm}/bin/hdparm -B 255 -S 0 /dev/%k"
   '';
+
+  # Backup Calibre library from EXTDrive1 to repo-odroid7
+  custom.resticprofile.profiles = {
+    calibre-library = {
+      "inherit" = "repo-odroid7";
+      backup = {
+        source = [ "/mnt/EXTDrive1/PublicCalibreLibrary" ];
+        tag = [ "calibre" "odroid8" ];
+        exclude = [ "*.tmp" "*.lock" ];
+      };
+    };
+  };
+
+  custom.resticprofile.groups = {
+    calibre-daily = {
+      profiles = [ "calibre-library" ];
+      schedules = {
+        backup = {
+          at = "02:30";
+        };
+      };
+    };
+  };
 }

@@ -14,6 +14,7 @@
     ./coredns.nix
     ./wireguard.nix
     ./resticprofile.nix
+    ./restic-repos.nix
   ];
 
   config = {

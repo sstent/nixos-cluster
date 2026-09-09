@@ -22,42 +22,32 @@ in {
 
     repositories = lib.mkOption {
       type = lib.types.attrsOf lib.types.anything;
-      default = {
-        repo-pr2100 = {
-          repository = "rest:http://192.168.4.109:8888";
-          password-file = config.sops.secrets."restic_password".path;
-          retention = {
-            keep-daily = 7;
-            keep-weekly = 4;
-            keep-monthly = 12;
-            group-by = "host,paths";
+      default = {};
+      description = ''
+        Reusable base repository profiles (mixins) that backup profiles can
+        inherit from. Define these in a shared module (e.g. restic-repos.nix)
+        and merge them in per-host as needed.
+      '';
+      example = lib.literalExpression ''
+        {
+          repo-pr2100 = {
+            repository = "rest:http://192.168.4.109:8888";
+            password-file = config.sops.secrets."restic_password".path;
+            retention = { keep-daily = 7; keep-weekly = 4; keep-monthly = 12; group-by = "host,paths"; };
           };
-        };
-        repo-odroid7 = {
-          repository = "sftp:root@192.168.4.227:/mnt/EXTDrive1/_RESTICDATA";
-          password-file = config.sops.secrets."restic_password_odroid7".path;
-          retention = {
-            keep-daily = 7;
-            keep-weekly = 4;
-            keep-monthly = 12;
-            group-by = "host,paths";
-          };
-        };
-      };
-      description = "Reusable base repository profiles that host profiles can inherit";
+        }
+      '';
     };
 
     profiles = lib.mkOption {
       type = lib.types.attrsOf lib.types.anything;
       default = {};
-      description = "Host-specific and application backup profiles";
+      description = "Host-specific backup profiles. Use `inherit` to pull in a repository mixin.";
       example = lib.literalExpression ''
         {
           system = {
-            inherit = "repo-pr2100";
-            backup = {
-              source = [ "/var/lib" ];
-            };
+            "inherit" = "repo-pr2100";
+            backup.source = [ "/var/lib" ];
           };
         }
       '';
@@ -66,7 +56,7 @@ in {
     groups = lib.mkOption {
       type = lib.types.attrsOf lib.types.anything;
       default = {};
-      description = "Resticprofile groups and schedules (version 2)";
+      description = "Resticprofile groups and schedules (version 2).";
     };
   };
 
@@ -78,9 +68,6 @@ in {
         });
       })
     ];
-
-    sops.secrets."restic_password" = {};
-    sops.secrets."restic_password_odroid7" = {};
 
     environment.systemPackages = [
       pkgs.resticprofile
