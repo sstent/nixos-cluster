@@ -13,6 +13,8 @@
   # module boundary.
   sops.secrets."restic_password" = {};
   sops.secrets."restic_password_odroid7" = {};
+  sops.secrets."restic_password_hetzner" = {};
+  sops.secrets."restic_azure_env" = {};
 
   custom.resticprofile.repositories = {
     # Restserver running on the PR2100 NAS
@@ -31,6 +33,30 @@
     repo-odroid7 = {
       repository = "sftp:root@192.168.4.227:/mnt/EXTDrive1/_RESTICDATA";
       password-file = config.sops.secrets."restic_password_odroid7".path;
+      retention = {
+        keep-daily = 7;
+        keep-weekly = 4;
+        keep-monthly = 12;
+        group-by = "host,paths";
+      };
+    };
+
+    # Azure Blob Storage repository
+    repo-azure = {
+      repository = "azure:repo1:/";
+      env-file = config.sops.secrets."restic_azure_env".path;
+      retention = {
+        keep-daily = 7;
+        keep-weekly = 4;
+        keep-monthly = 12;
+        group-by = "host,paths";
+      };
+    };
+
+    # Hetzner Storage Box SFTP repository
+    repo-hetzner = {
+      repository = "sftp:u665612@u665612.your-storagebox.de:23:/home/restic-backups";
+      password-file = config.sops.secrets."restic_password_hetzner".path;
       retention = {
         keep-daily = 7;
         keep-weekly = 4;
