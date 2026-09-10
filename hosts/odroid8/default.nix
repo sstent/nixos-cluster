@@ -34,26 +34,37 @@
     ACTION=="add|change", SUBSYSTEM=="block", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", RUN+="${pkgs.hdparm}/bin/hdparm -B 255 -S 0 /dev/%k"
   '';
 
-  # Backup Calibre library from EXTDrive1 to repo-odroid7
-  custom.resticprofile.profiles = {
+# Declare only the secrets this host actually uses
+ sops.secrets."restic_password_odroid7" = {};
+ sops.secrets."restic_password_hetzner" = {};
+ custom.resticprofile.profiles = {
     calibre-library = {
-      "inherit" = "repo-odroid7";
+      repository = "sftp:root@192.168.4.227:/mnt/EXTDrive1/_RESTICDATA/calibre-library";
+      password-file = config.sops.secrets."restic_password_odroid7".path;
+      retention = {
+        keep-daily = 7;
+        keep-weekly = 4;
+        keep-monthly = 12;
+        group-by = "host,paths";
+      };
       backup = {
         source = [ "/mnt/EXTDrive1/PublicCalibreLibrary" ];
         tag = [ "calibre" "odroid8" ];
         exclude = [ "*.tmp" "*.lock" ];
       };
     };
+    
     photos-library = {
-      "inherit" = "repo-hetzner";
+      repository = "sftp://u665612@u665612.your-storagebox.de:23//home//restic-backups//{{ .Profile.Name }}";
+      password-file = config.sops.secrets."restic_password_hetzner".path;
+      retention = {
+        keep-last = 10;
+        group-by = "host,paths";
+      };
       backup = {
         source = [ "/mnt/EXTDrive1/Photos_Backup" ];
         tag = [ "MasterPhotos" "odroid8" ];
         exclude = [ "*.tmp" "*.lock" ];
-        schedule = "03:30";
-      };
-      retention = {
-        keep-last = 10;
       };
     };
   };
@@ -61,19 +72,11 @@
   custom.resticprofile.groups = {
     calibre-daily = {
       profiles = [ "calibre-library" ];
-      schedules = {
-        backup = {
-          at = "02:30";
-        };
-      };
+      schedules.backup.at = "02:30";
     };
     photos-daily = {
       profiles = [ "photos-library" ];
-      schedules = {
-        backup = {
-          at = "03:30";
-        };
-      };
+      schedules.backup.at = "03:30";
     };
   };
 }

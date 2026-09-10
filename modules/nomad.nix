@@ -21,7 +21,6 @@
 };
 
   sops.secrets.gitea_docker_auth = {
-    key = "data";
     path = "/root/.docker/config.json";
     owner = "root";
     group = "root";
