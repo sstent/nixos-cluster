@@ -20,10 +20,20 @@ in {
       description = "Global configuration section for resticprofile";
     };
 
+    repositories = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = {};
+      description = ''
+        Reusable base repository profiles (mixins) that backup profiles can
+        inherit from via `"inherit" = "repo-<name>"`. Define these in a shared
+        module (e.g. restic-repos.nix) and merge them in per-host as needed.
+      '';
+    };
+
     profiles = lib.mkOption {
       type = lib.types.attrsOf lib.types.anything;
       default = {};
-      description = "Host-specific backup profiles defining the target repository and backup tasks.";
+      description = "Host-specific backup profiles. Use \"inherit\" to pull in a repository mixin.";
     };
 
     groups = lib.mkOption {
@@ -51,7 +61,7 @@ in {
       lib.filterAttrs (n: v: v != {} && v != null) {
         version = "2";
         global = cfg.global;
-        profiles = cfg.profiles;
+        profiles = cfg.repositories // cfg.profiles;
         groups = cfg.groups;
       }
     );
