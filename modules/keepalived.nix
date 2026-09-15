@@ -49,6 +49,8 @@ with lib; let
           "homeassistant",
           "global",
           "sslcert",
+          "traefik.http.routers.hass-nixlan.rule=Host(`hass-nix.service.dc1.consul`,`hass.service.dc1.consul`)",
+          "traefik.http.routers.hass-nixlan.entrypoints=web",
           "traefik.http.routers.hass-nix.rule=Host(`hass-nix.service.dc1.fbleagh.duckdns.org`,`hass-local.fbleagh.duckdns.org`,`hass-nix-local.fbleagh.duckdns.org`)",
           "traefik.http.routers.hass-nix.entrypoints=websecure",
           "traefik.http.routers.hass-nix.tls=true"

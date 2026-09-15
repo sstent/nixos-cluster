@@ -27,6 +27,10 @@
   systemd.services.home-assistant.restartIfChanged = false;
   systemd.services.home-assistant.stopIfChanged = false;
   systemd.services.home-assistant.unitConfig.ConditionPathExists = "/run/ha-cluster-leader";
+  systemd.services.home-assistant.serviceConfig.ReadWritePaths = [
+    "/mnt/hass-ha"
+    "/mnt/Public"
+  ];
 
   # ---------------------------------------------------------
   # RSYNC SYNC LOGIC (Pulls from VIP)
