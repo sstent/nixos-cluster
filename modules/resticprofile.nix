@@ -142,5 +142,41 @@ in {
         groups = cfg.groups;
       }
     );
+
+    systemd.timers = let
+      mkTimers = items:
+        lib.mapAttrs' (name: item:
+          let schedule = item.schedules.backup.at or null;
+          in if schedule != null
+          then lib.nameValuePair "resticprofile-${name}" {
+            wantedBy = [ "timers.target" ];
+            timerConfig = {
+              OnCalendar = schedule;
+              Persistent = true;
+            };
+          }
+          else lib.nameValuePair "" null
+        ) items;
+      allTimers = (mkTimers cfg.profiles) // (mkTimers cfg.groups);
+    in lib.filterAttrs (n: v: n != "" && v != null) allTimers;
+
+    systemd.services = let
+      mkServices = items:
+        lib.mapAttrs' (name: item:
+          let schedule = item.schedules.backup.at or null;
+          in if schedule != null
+          then lib.nameValuePair "resticprofile-${name}" {
+            description = "resticprofile backup for ${name}";
+            serviceConfig = {
+              Type = "oneshot";
+              ExecStart = "${pkgs.resticprofile}/bin/resticprofile --name ${name} backup";
+              # Restic needs HOME set for cache
+              Environment = [ "HOME=/root" ];
+            };
+          }
+          else lib.nameValuePair "" null
+        ) items;
+      allServices = (mkServices cfg.profiles) // (mkServices cfg.groups);
+    in lib.filterAttrs (n: v: n != "" && v != null) allServices;
   };
 }
